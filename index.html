@@ -552,7 +552,11 @@
             function addMessage(sender, text) {
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message', `${sender}-message`);
-                messageDiv.textContent = text;
+                
+                // Format teks dengan mempertahankan line breaks
+                const formattedText = text.replace(/\n/g, '<br>');
+                messageDiv.innerHTML = formattedText;
+                
                 chatArea.appendChild(messageDiv);
                 
                 // Simpan pesan ke riwayat
@@ -620,7 +624,7 @@
             // Fungsi untuk memanggil API Gemini (multimodal)
             async function fetchGeminiResponse(message, imageData, mode) {
                 const model = imageData ? 'gemini-pro-vision' : 'gemini-pro';
-                const endpoint = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${API_KEY}`;
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
                 
                 const systemPrompt = mode === 'deepThink' ? 
                     "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik." : 
@@ -631,13 +635,14 @@
                 
                 // Jika ada gambar, kita tambahkan bagian gambar
                 if (imageData) {
+                    // Format baru untuk gambar
                     contents.push({
                         role: "user",
                         parts: [
                             { text: `${systemPrompt}\n\nPertanyaan: ${message}` },
                             {
-                                inline_data: {
-                                    mime_type: "image/jpeg",
+                                inlineData: {
+                                    mimeType: "image/jpeg",
                                     data: imageData.split(',')[1] // Hapus bagian "data:image/jpeg;base64,"
                                 }
                             }
@@ -670,7 +675,13 @@
                 }
                 
                 const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
+                
+                // Ekstrak teks dari respons
+                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error('Format respons tidak valid');
+                }
             }
             
             // Fungsi untuk mengirim pesan
