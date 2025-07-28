@@ -465,99 +465,9 @@
         #fileInput {
             display: none;
         }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
-        }
-        
-        .modal-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            text-align: center;
-        }
-        
-        .modal-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            transition: border-color 0.3s;
-        }
-        
-        .modal-input:focus {
-            border-color: #4361ee;
-            outline: none;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .modal-button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .modal-cancel {
-            background: linear-gradient(135deg, #f0f2f5, #e4e7eb);
-            color: #2c3e50;
-        }
-        
-        .modal-cancel:hover {
-            background: linear-gradient(135deg, #e2e5e9, #d4d7dc);
-        }
-        
-        .modal-confirm {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            color: white;
-        }
-        
-        .modal-confirm:hover {
-            background: linear-gradient(135deg, #3a56d4, #2e0a8a);
-        }
     </style>
 </head>
 <body>
-    <!-- Modal untuk API Key -->
-    <div class="modal" id="apiKeyModal">
-        <div class="modal-content">
-            <h2 class="modal-title">Masukkan API Key Google AI Studio</h2>
-            <input type="text" id="apiKeyInput" class="modal-input" placeholder="AIzaSyDcX1GOOqJoDFbRJCd2IXlkhoxFnwNNiRM">
-            <div class="modal-buttons">
-                <button class="modal-button modal-cancel" id="cancelButton">Batal</button>
-                <button class="modal-button modal-confirm" id="confirmButton">Simpan</button>
-            </div>
-        </div>
-    </div>
-    
     <!-- Left Sidebar -->
     <div class="sidebar">
         <div class="profile-placeholder">
@@ -623,50 +533,20 @@
             const searchButton = document.getElementById('searchButton');
             const attachmentButton = document.getElementById('attachmentButton');
             const fileInput = document.getElementById('fileInput');
-            const apiKeyModal = document.getElementById('apiKeyModal');
-            const apiKeyInput = document.getElementById('apiKeyInput');
-            const cancelButton = document.getElementById('cancelButton');
-            const confirmButton = document.getElementById('confirmButton');
             
             // State aplikasi
-            let API_KEY = localStorage.getItem('google_ai_api_key') || '';
+            const API_KEY = "AIzaSyDcX1GOOqJoDFbRJCd2IXlkhoxFnwNNiRM";
             let activeMode = null;
             let chatHistory = [];
             let uploadedImage = null;
-            
-            // Tampilkan modal jika API key belum disimpan
-            if (!API_KEY) {
-                apiKeyModal.style.display = 'flex';
-            }
-            
-            // Event listeners untuk modal
-            confirmButton.addEventListener('click', () => {
-                API_KEY = apiKeyInput.value.trim();
-                if (API_KEY) {
-                    localStorage.setItem('google_ai_api_key', API_KEY);
-                    apiKeyModal.style.display = 'none';
-                    addWelcomeMessage();
-                } else {
-                    alert('Silakan masukkan API key yang valid');
-                }
-            });
-            
-            cancelButton.addEventListener('click', () => {
-                apiKeyModal.style.display = 'none';
-                addWelcomeMessage();
-            });
             
             // Pesan selamat datang
             function addWelcomeMessage() {
                 addMessage('assistant', 'Halo! Saya Rhama, asisten AI multimodal Anda. Silakan ajukan pertanyaan, lampirkan gambar, atau gunakan fitur "Berpikir keras" untuk jawaban mendalam.');
             }
             
-            // Inisialisasi chat
-            setTimeout(() => {
-                if (API_KEY) {
-                    addWelcomeMessage();
-                }
-            }, 500);
+            // Inisialisasi chat dengan pesan selamat datang
+            addWelcomeMessage();
             
             // Fungsi untuk menambahkan pesan teks ke chat
             function addMessage(sender, text) {
@@ -795,11 +675,6 @@
             
             // Fungsi untuk mengirim pesan
             async function sendMessage() {
-                if (!API_KEY) {
-                    apiKeyModal.style.display = 'flex';
-                    return;
-                }
-                
                 const message = messageInput.value.trim();
                 const imageData = uploadedImage;
                 
