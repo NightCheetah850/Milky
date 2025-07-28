@@ -623,8 +623,8 @@
             
             // Fungsi untuk memanggil API Gemini (multimodal)
             async function fetchGeminiResponse(message, imageData, mode) {
-                // Gunakan model yang benar sesuai dengan keberadaan gambar
-                const model = imageData ? 'gemini-1.0-pro-vision' : 'gemini-1.0-pro';
+                // Gunakan model yang benar sesuai dokumentasi resmi
+                const model = imageData ? 'gemini-pro-vision' : 'gemini-pro';
                 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
                 
                 const systemPrompt = mode === 'deepThink' ? 
@@ -636,7 +636,7 @@
                 
                 // Jika ada gambar, kita tambahkan bagian gambar
                 if (imageData) {
-                    // Format baru untuk gambar
+                    // Format yang benar untuk gambar
                     contents.push({
                         role: "user",
                         parts: [
@@ -667,7 +667,9 @@
                 try {
                     const response = await fetch(endpoint, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                        },
                         body: JSON.stringify(requestBody)
                     });
                     
