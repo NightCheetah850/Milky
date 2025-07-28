@@ -623,7 +623,8 @@
             
             // Fungsi untuk memanggil API Gemini (multimodal)
             async function fetchGeminiResponse(message, imageData, mode) {
-                const model = imageData ? 'gemini-pro-vision' : 'gemini-pro';
+                // Gunakan model yang benar sesuai dengan keberadaan gambar
+                const model = imageData ? 'gemini-1.0-pro-vision' : 'gemini-1.0-pro';
                 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
                 
                 const systemPrompt = mode === 'deepThink' ? 
@@ -663,24 +664,29 @@
                     }
                 };
                 
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || 'Terjadi kesalahan pada API');
-                }
-                
-                const data = await response.json();
-                
-                // Ekstrak teks dari respons
-                if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                    return data.candidates[0].content.parts[0].text;
-                } else {
-                    throw new Error('Format respons tidak valid');
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error?.message || 'Terjadi kesalahan pada API');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Ekstrak teks dari respons
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                        return data.candidates[0].content.parts[0].text;
+                    } else {
+                        throw new Error('Format respons tidak valid');
+                    }
+                } catch (error) {
+                    console.error('API Error:', error);
+                    throw new Error(`Gagal mendapatkan respons: ${error.message}`);
                 }
             }
             
@@ -740,6 +746,18 @@
             fileInput.addEventListener('change', (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    // Validasi jenis file
+                    if (!file.type.match('image.*')) {
+                        alert('Hanya file gambar yang diizinkan');
+                        return;
+                    }
+                    
+                    // Validasi ukuran file (maks 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Ukuran file maksimal 5MB');
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         uploadedImage = event.target.result; // Simpan gambar sebagai data URL
