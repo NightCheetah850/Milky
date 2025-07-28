@@ -621,43 +621,37 @@
                 }
             }
             
-            // Fungsi untuk memanggil API Gemini (multimodal)
+            // Fungsi untuk memanggil API Gemini 2.0 Flash
             async function fetchGeminiResponse(message, imageData, mode) {
-                // Gunakan model yang benar sesuai dokumentasi resmi
-                const model = imageData ? 'gemini-pro-vision' : 'gemini-pro';
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`;
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
                 
                 const systemPrompt = mode === 'deepThink' ? 
                     "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik." : 
                     "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini.";
                 
-                // Konstruksi konten berdasarkan apakah ada gambar
-                const contents = [];
+                // Konstruksi konten
+                const parts = [];
                 
-                // Jika ada gambar, kita tambahkan bagian gambar
+                // Tambahkan prompt sistem
+                parts.push({
+                    text: `${systemPrompt}\n\nPertanyaan: ${message}`
+                });
+                
+                // Jika ada gambar, tambahkan bagian gambar
                 if (imageData) {
-                    // Format yang benar untuk gambar
-                    contents.push({
-                        role: "user",
-                        parts: [
-                            { text: `${systemPrompt}\n\nPertanyaan: ${message}` },
-                            {
-                                inlineData: {
-                                    mimeType: "image/jpeg",
-                                    data: imageData.split(',')[1] // Hapus bagian "data:image/jpeg;base64,"
-                                }
-                            }
-                        ]
-                    });
-                } else {
-                    contents.push({
-                        role: "user",
-                        parts: [{ text: `${systemPrompt}\n\n${message}` }]
+                    parts.push({
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: imageData.split(',')[1]
+                        }
                     });
                 }
                 
                 const requestBody = {
-                    contents: contents,
+                    contents: [{
+                        role: "user",
+                        parts: parts
+                    }],
                     generationConfig: {
                         temperature: mode === 'deepThink' ? 0.3 : 0.7,
                         maxOutputTokens: 2000
@@ -668,7 +662,7 @@
                     const response = await fetch(endpoint, {
                         method: 'POST',
                         headers: { 
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(requestBody)
                     });
@@ -681,7 +675,12 @@
                     const data = await response.json();
                     
                     // Ekstrak teks dari respons
-                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                    if (data.candidates && 
+                        data.candidates[0] && 
+                        data.candidates[0].content && 
+                        data.candidates[0].content.parts &&
+                        data.candidates[0].content.parts[0] &&
+                        data.candidates[0].content.parts[0].text) {
                         return data.candidates[0].content.parts[0].text;
                     } else {
                         throw new Error('Format respons tidak valid');
