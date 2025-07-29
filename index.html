@@ -78,11 +78,11 @@
             height: 100%;
             left: 0;
             top: 0;
+            transform: translateX(-100%);
         }
 
-        .sidebar.hidden {
-            transform: translateX(-100%);
-            box-shadow: none;
+        .sidebar.visible {
+            transform: translateX(0);
         }
 
         .profile-placeholder {
@@ -237,7 +237,7 @@
             margin-left: 0;
         }
 
-        .sidebar:not(.hidden) + .main-content {
+        .sidebar.visible + .main-content {
             margin-left: 300px;
         }
 
@@ -681,7 +681,7 @@
                 width: 280px;
             }
             
-            .sidebar:not(.hidden) + .main-content {
+            .sidebar.visible + .main-content {
                 margin-left: 280px;
             }
             
@@ -700,7 +700,7 @@
                 width: 260px;
             }
             
-            .sidebar:not(.hidden) + .main-content {
+            .sidebar.visible + .main-content {
                 margin-left: 260px;
             }
             
@@ -774,16 +774,8 @@
                 z-index: 1000;
             }
             
-            .sidebar:not(.hidden) {
+            .sidebar.visible {
                 transform: translateX(0);
-            }
-            
-            .sidebar.hidden {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar:not(.hidden) + .main-content {
-                margin-left: 0;
             }
             
             .toggle-sidebar-button.sidebar-visible {
@@ -1007,8 +999,10 @@
             let currentChatId = null;
             let historyIdToDelete = null;
             
-            // Inisialisasi chat dengan pesan selamat datang
-            addWelcomeMessage();
+            // Sidebar dalam keadaan tertutup saat pertama kali dimuat
+            sidebar.classList.remove('visible');
+            toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
+            toggleSidebarButton.classList.remove('sidebar-visible');
             
             // Fungsi untuk menambahkan pesan teks ke chat
             function addMessage(sender, text) {
@@ -1387,16 +1381,10 @@
                     chatArea.innerHTML = '';
                     chatHistory = [];
                     conversationMemory = [];
-                    addWelcomeMessage();
                 }
                 
                 // Perbarui daftar riwayat
                 loadHistoryList();
-            }
-            
-            // Pesan selamat datang
-            function addWelcomeMessage() {
-                addMessage('assistant', 'Halo! Saya Rhama, asisten AI Anda. Silakan ajukan pertanyaan, lampirkan gambar, atau gunakan fitur "Berpikir keras" untuk jawaban mendalam.');
             }
             
             // Event listeners
@@ -1460,9 +1448,6 @@
                 deepThinkButton.classList.remove('active');
                 searchButton.classList.remove('active');
                 
-                // Tambahkan pesan selamat datang baru
-                addMessage('assistant', 'Percakapan baru dimulai. Ada yang bisa saya bantu hari ini?');
-                
                 // Perbarui daftar riwayat
                 loadHistoryList();
             });
@@ -1473,13 +1458,11 @@
                     // Mode sudah aktif, nonaktifkan
                     activeMode = null;
                     deepThinkButton.classList.remove('active');
-                    addMessage('assistant', 'Mode Berpikir Keras dinonaktifkan. Kembali ke mode normal.');
                 } else {
                     // Aktifkan mode deepThink
                     activeMode = 'deepThink';
                     deepThinkButton.classList.add('active');
                     searchButton.classList.remove('active');
-                    addMessage('assistant', 'Mode Berpikir Keras diaktifkan. Saya akan memberikan jawaban yang mendalam dan analitis untuk pertanyaan Anda.');
                 }
             });
             
@@ -1488,26 +1471,24 @@
                     // Mode sudah aktif, nonaktifkan
                     activeMode = null;
                     searchButton.classList.remove('active');
-                    addMessage('assistant', 'Mode Pencarian dinonaktifkan. Kembali ke mode normal.');
                 } else {
                     // Aktifkan mode search
                     activeMode = 'search';
                     searchButton.classList.add('active');
                     deepThinkButton.classList.remove('active');
-                    addMessage('assistant', 'Mode Pencarian diaktifkan. Saya akan mencari informasi terkini yang relevan dengan pertanyaan Anda.');
                 }
             });
             
             // Toggle sidebar
             toggleSidebarButton.addEventListener('click', () => {
-                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('visible');
                 
-                if (sidebar.classList.contains('hidden')) {
-                    toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
-                    toggleSidebarButton.classList.remove('sidebar-visible');
-                } else {
+                if (sidebar.classList.contains('visible')) {
                     toggleSidebarButton.innerHTML = '<i class="fas fa-times"></i>';
                     toggleSidebarButton.classList.add('sidebar-visible');
+                } else {
+                    toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
+                    toggleSidebarButton.classList.remove('sidebar-visible');
                 }
             });
             
