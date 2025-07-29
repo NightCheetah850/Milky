@@ -646,9 +646,10 @@
             async function fetchGeminiResponse(message, imageData, mode) {
                 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
                 
+                // PERBAIKAN: Prompt yang lebih jelas tanpa markdown
                 const systemPrompt = mode === 'deepThink' ? 
-                    "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik." : 
-                    "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini.";
+                    "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja." : 
+                    "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja.";
                 
                 // Konstruksi konten dengan memori percakapan
                 const parts = [];
@@ -714,7 +715,14 @@
                         data.candidates[0].content.parts &&
                         data.candidates[0].content.parts[0] &&
                         data.candidates[0].content.parts[0].text) {
-                        return data.candidates[0].content.parts[0].text;
+                        
+                        // Bersihkan simbol markdown
+                        let responseText = data.candidates[0].content.parts[0].text;
+                        responseText = responseText.replace(/\*\*/g, '') // Hapus **
+                                     .replace(/\*/g, '')   // Hapus *
+                                     .replace(/```/g, ''); // Hapus ```
+                        
+                        return responseText;
                     } else {
                         throw new Error('Format respons tidak valid');
                     }
