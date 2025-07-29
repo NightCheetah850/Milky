@@ -30,6 +30,12 @@
             padding: 20px 0;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             z-index: 10;
+            transition: width 0.3s;
+            overflow: hidden;
+        }
+
+        .sidebar:hover {
+            width: 250px;
         }
 
         .profile-placeholder {
@@ -69,6 +75,7 @@
             transition: all 0.3s;
             color: #555;
             position: relative;
+            white-space: nowrap;
         }
 
         .sidebar-button:hover {
@@ -88,6 +95,54 @@
 
         .sidebar-button span {
             font-size: 11px;
+            font-weight: 500;
+        }
+
+        .history-container {
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border-top: 1px solid #e6e9ef;
+            padding-top: 10px;
+            display: none;
+        }
+
+        .sidebar:hover .history-container {
+            display: block;
+        }
+
+        .history-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4361ee;
+            padding: 10px 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .history-item {
+            padding: 8px 15px;
+            font-size: 12px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-item:hover {
+            background-color: #f5f7fb;
+            border-left: 3px solid #4361ee;
+            color: #4361ee;
+        }
+
+        .history-item.active {
+            background-color: #e6eeff;
+            border-left: 3px solid #4361ee;
+            color: #4361ee;
             font-weight: 500;
         }
 
@@ -425,10 +480,28 @@
             background: linear-gradient(135deg, #3a56d4, #2e0a8a);
         }
 
+        .history-container::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .history-container::-webkit-scrollbar-track {
+            background: rgba(241, 241, 241, 0.5);
+            border-radius: 5px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            border-radius: 5px;
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             .sidebar {
                 width: 60px;
+            }
+            
+            .sidebar:hover {
+                width: 200px;
             }
             
             .footer {
@@ -478,6 +551,12 @@
                 <i class="fas fa-plus"></i>
                 <span>Chat Baru</span>
             </div>
+            <div class="history-container">
+                <div class="history-title">Riwayat Percakapan</div>
+                <div id="historyList">
+                    <!-- Daftar riwayat akan muncul di sini -->
+                </div>
+            </div>
         </div>
     </div>
 
@@ -489,7 +568,7 @@
                 <i class="fas fa-robot"></i>
             </div>
             <h1 class="header-title">Halo, Saya Rhama</h1>
-            <p class="header-subtitle">Asisten AI Anda</p>
+            <p class="header-subtitle">Asisten AI Multimodal Anda</p>
         </div>
 
         <!-- Chat Area -->
@@ -509,7 +588,7 @@
             </div>
             
             <div class="input-container">
-                <input type="text" id="messageInput" placeholder="Tanyakan apa saja...">
+                <input type="text" id="messageInput" placeholder="Ketik pesan atau lampirkan gambar...">
             </div>
             
             <input type="file" id="fileInput" accept="image/*">
@@ -533,6 +612,7 @@
             const searchButton = document.getElementById('searchButton');
             const attachmentButton = document.getElementById('attachmentButton');
             const fileInput = document.getElementById('fileInput');
+            const historyList = document.getElementById('historyList');
             
             // State aplikasi
             const API_KEY = "AIzaSyDcX1GOOqJoDFbRJCd2IXlkhoxFnwNNiRM";
@@ -540,10 +620,11 @@
             let chatHistory = [];
             let uploadedImage = null;
             let conversationMemory = [];
+            let currentChatId = null;
             
             // Pesan selamat datang
             function addWelcomeMessage() {
-                addMessage('assistant', 'Halo! Saya Rhama, asisten AI Anda. Silakan ajukan pertanyaan, lampirkan gambar, atau gunakan fitur "Berpikir keras" untuk jawaban mendalam, fitur "Pencarian" masih tahap pengembangan.');
+                addMessage('assistant', 'Halo! Saya Rhama, asisten AI multimodal Anda. Silakan ajukan pertanyaan, lampirkan gambar, atau gunakan fitur "Berpikir keras" untuk jawaban mendalam.');
             }
             
             // Inisialisasi chat dengan pesan selamat datang
@@ -769,10 +850,134 @@
                         role: "model",
                         parts: [{ text: response }]
                     });
+                    
+                    // Simpan riwayat percakapan
+                    saveChatHistory();
                 } catch (error) {
                     hideThinkingIndicator();
                     addMessage('assistant', `Maaf, terjadi kesalahan: ${error.message}`);
                     console.error('API Error:', error);
+                }
+            }
+            
+            // Fungsi untuk menyimpan riwayat chat ke localStorage
+            function saveChatHistory() {
+                if (chatHistory.length === 0) return;
+                
+                // Buat ID unik untuk chat jika belum ada
+                if (!currentChatId) {
+                    currentChatId = 'chat-' + Date.now();
+                }
+                
+                // Buat objek riwayat
+                const historyItem = {
+                    id: currentChatId,
+                    title: getChatTitle(),
+                    timestamp: new Date().toISOString(),
+                    chatHistory: chatHistory,
+                    conversationMemory: conversationMemory
+                };
+                
+                // Dapatkan semua riwayat yang ada
+                let histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
+                
+                // Hapus riwayat lama dengan ID yang sama jika ada
+                histories = histories.filter(item => item.id !== currentChatId);
+                
+                // Tambahkan riwayat baru
+                histories.push(historyItem);
+                
+                // Simpan kembali ke localStorage
+                localStorage.setItem('chatHistories', JSON.stringify(histories));
+                
+                // Perbarui daftar riwayat di sidebar
+                loadHistoryList();
+            }
+            
+            // Fungsi untuk mendapatkan judul chat dari pesan pertama
+            function getChatTitle() {
+                if (chatHistory.length > 0) {
+                    const firstUserMessage = chatHistory.find(msg => msg.sender === 'user');
+                    if (firstUserMessage) {
+                        const text = firstUserMessage.text || firstUserMessage.caption || 'Percakapan';
+                        return text.length > 30 ? text.substring(0, 30) + '...' : text;
+                    }
+                }
+                return 'Percakapan Baru';
+            }
+            
+            // Fungsi untuk memuat daftar riwayat dari localStorage
+            function loadHistoryList() {
+                historyList.innerHTML = '';
+                
+                // Dapatkan semua riwayat
+                const histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
+                
+                // Urutkan berdasarkan timestamp (terbaru di atas)
+                histories.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                // Tampilkan maksimal 10 riwayat terbaru
+                histories.slice(0, 10).forEach(history => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    if (history.id === currentChatId) {
+                        historyItem.classList.add('active');
+                    }
+                    historyItem.textContent = history.title;
+                    
+                    historyItem.addEventListener('click', () => {
+                        // Muat percakapan yang dipilih
+                        loadChatHistory(history.id);
+                    });
+                    
+                    historyList.appendChild(historyItem);
+                });
+                
+                // Tambahkan pesan jika tidak ada riwayat
+                if (histories.length === 0) {
+                    const emptyMsg = document.createElement('div');
+                    emptyMsg.className = 'history-item';
+                    emptyMsg.textContent = 'Belum ada riwayat';
+                    emptyMsg.style.fontStyle = 'italic';
+                    historyList.appendChild(emptyMsg);
+                }
+            }
+            
+            // Fungsi untuk memuat riwayat chat tertentu
+            function loadChatHistory(chatId) {
+                // Dapatkan semua riwayat
+                const histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
+                
+                // Cari riwayat yang sesuai
+                const history = histories.find(item => item.id === chatId);
+                
+                if (history) {
+                    // Set ID chat saat ini
+                    currentChatId = chatId;
+                    
+                    // Kosongkan chat area
+                    chatArea.innerHTML = '';
+                    
+                    // Reset state
+                    chatHistory = [];
+                    conversationMemory = [];
+                    uploadedImage = null;
+                    
+                    // Tambahkan semua pesan dari riwayat
+                    history.chatHistory.forEach(msg => {
+                        if (msg.type === 'text') {
+                            addMessage(msg.sender, msg.text);
+                        } else if (msg.type === 'image') {
+                            // Untuk gambar, kita gunakan data yang tersimpan
+                            addImageMessage(msg.imageData, msg.caption);
+                        }
+                    });
+                    
+                    // Pulihkan memori percakapan
+                    conversationMemory = [...history.conversationMemory];
+                    
+                    // Tandai sebagai aktif di daftar riwayat
+                    loadHistoryList();
                 }
             }
             
@@ -820,18 +1025,23 @@
             
             // Tombol chat baru
             newChatButton.addEventListener('click', () => {
+                // Simpan riwayat percakapan saat ini
+                saveChatHistory();
+                
                 // Kosongkan area chat
                 chatArea.innerHTML = '';
                 
-                // Reset riwayat chat dan memori percakapan
+                // Reset state
                 chatHistory = [];
                 conversationMemory = [];
-                
-                // Reset gambar yang diunggah
                 uploadedImage = null;
+                currentChatId = null;
                 
                 // Tambahkan pesan selamat datang baru
                 addMessage('assistant', 'Percakapan baru dimulai. Ada yang bisa saya bantu hari ini?');
+                
+                // Perbarui daftar riwayat
+                loadHistoryList();
             });
             
             // Tombol mode
@@ -849,16 +1059,8 @@
                 addMessage('assistant', 'Mode Pencarian diaktifkan. Saya akan mencari informasi terkini yang relevan dengan pertanyaan Anda.');
             });
             
-            // Efek hover untuk tombol sidebar
-            newChatButton.addEventListener('mouseenter', () => {
-                newChatButton.style.backgroundColor = '#f5f7fb';
-                newChatButton.style.color = '#4361ee';
-            });
-            
-            newChatButton.addEventListener('mouseleave', () => {
-                newChatButton.style.backgroundColor = '';
-                newChatButton.style.color = '#555';
-            });
+            // Muat riwayat saat halaman pertama kali dimuat
+            loadHistoryList();
         });
     </script>
 </body>
