@@ -333,10 +333,8 @@
             max-width: 85%;
             padding: 16px 20px;
             margin-bottom: 20px;
-            border-radius: 22px;
             position: relative;
             animation: fadeIn 0.4s ease-out;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             line-height: 1.6;
             font-size: 16px;
             transition: transform 0.3s;
@@ -350,15 +348,26 @@
             align-self: flex-end;
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
             color: white;
+            border-radius: 22px;
             border-bottom-right-radius: 5px;
+            /* Menghapus efek shadow */
+            box-shadow: none !important;
         }
 
         .assistant-message {
             align-self: flex-start;
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            background: none;
             color: #333;
-            border: 1px solid rgba(230, 233, 239, 0.8);
-            border-bottom-left-radius: 5px;
+            border: none;
+            border-radius: 0;
+            padding: 16px 0;
+            max-width: 100%;
+            /* Menghapus efek bubble */
+            box-shadow: none !important;
+        }
+
+        .assistant-message:hover {
+            transform: none;
         }
 
         .user-image-message {
@@ -369,8 +378,9 @@
             padding: 10px;
             margin-bottom: 20px;
             max-width: 85%;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             animation: fadeIn 0.4s ease-out;
+            /* Menghapus efek shadow */
+            box-shadow: none !important;
         }
 
         .user-image-message img {
@@ -390,16 +400,15 @@
 
         .thinking-indicator {
             align-self: flex-start;
-            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            background: none;
             color: #666;
-            padding: 16px 20px;
-            border-radius: 22px;
+            padding: 16px 0;
             display: flex;
             align-items: center;
             gap: 15px;
             font-style: italic;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-            border: 1px solid rgba(230, 233, 239, 0.8);
+            border: none;
+            box-shadow: none;
             font-size: 16px;
         }
 
@@ -1553,6 +1562,13 @@
                     button.classList.remove('active');
                 });
             });
+            
+            // Contoh percakapan awal
+            setTimeout(() => {
+                if (chatArea.children.length === 0) {
+                    addMessage('assistant', 'Halo! Saya Rhama, asisten AI Anda. Bagaimana saya bisa membantu Anda hari ini?');
+                }
+            }, 1000);
         });
     </script>
 </body>
