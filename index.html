@@ -26,41 +26,84 @@
             overflow: hidden;
         }
 
+        /* Tombol toggle sidebar baru */
+        .toggle-sidebar-button {
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 22px;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .toggle-sidebar-button:hover {
+            transform: translateY(-3px) rotate(10deg);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.5);
+        }
+
+        .toggle-sidebar-button:active {
+            transform: scale(0.95);
+        }
+
+        .toggle-sidebar-button.sidebar-visible {
+            left: 260px;
+            background: linear-gradient(135deg, #ff6b6b, #ff0000);
+        }
+
         /* Sidebar Styles */
         .sidebar {
-            width: 60px;
-            background-color: rgba(255, 255, 255, 0.9);
+            width: 300px;
+            background: linear-gradient(135deg, #2c3e50, #1a2a6c);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px 0;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            padding: 25px 0;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
             z-index: 10;
-            transition: width 0.3s;
+            transition: all 0.4s ease;
             overflow: hidden;
+            position: fixed;
+            height: 100%;
+            left: 0;
+            top: 0;
         }
 
-        .sidebar:hover {
-            width: 250px;
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            box-shadow: none;
         }
 
         .profile-placeholder {
-            width: 40px;
-            height: 40px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 20px;
+            font-size: 36px;
+            margin-top: auto;
             margin-bottom: 20px;
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.2);
         }
 
         .profile-placeholder i {
-            font-size: 20px;
+            font-size: 36px;
         }
 
         .sidebar-buttons {
@@ -68,39 +111,45 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            gap: 5px;
+            gap: 15px;
+            flex-grow: 1;
+            padding: 0 20px;
         }
 
         .sidebar-button {
             width: 100%;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            padding: 12px 0;
+            padding: 15px 20px;
             cursor: pointer;
             transition: all 0.3s;
-            color: #555;
+            color: #ecf0f1;
             position: relative;
-            white-space: nowrap;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
         }
 
         .sidebar-button:hover {
-            background-color: #f5f7fb;
-            color: #4361ee;
+            background: rgba(67, 97, 238, 0.3);
+            transform: translateX(5px);
         }
 
         .sidebar-button.active {
-            background-color: #e6eeff;
-            color: #4361ee;
+            background: rgba(67, 97, 238, 0.5);
+            box-shadow: 0 0 15px rgba(67, 97, 238, 0.4);
         }
 
         .sidebar-button i {
-            font-size: 18px;
-            margin-bottom: 4px;
+            font-size: 24px;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
         }
 
         .sidebar-button span {
-            font-size: 11px;
+            font-size: 16px;
             font-weight: 500;
         }
 
@@ -108,48 +157,72 @@
             width: 100%;
             max-height: 300px;
             overflow-y: auto;
-            margin-top: 10px;
-            border-top: 1px solid #e6e9ef;
-            padding-top: 10px;
-            display: none;
-        }
-
-        .sidebar:hover .history-container {
-            display: block;
+            margin-top: 20px;
+            border-top: 1px solid rgba(236, 240, 241, 0.2);
+            padding-top: 15px;
         }
 
         .history-title {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
-            color: #4361ee;
-            padding: 10px 15px;
+            color: #ecf0f1;
+            padding: 10px 20px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            opacity: 0.8;
         }
 
         .history-item {
-            padding: 8px 15px;
-            font-size: 12px;
-            color: #555;
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #ecf0f1;
             cursor: pointer;
             transition: all 0.2s;
             border-left: 3px solid transparent;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 5px 15px;
+            border-radius: 8px;
+        }
+
+        .history-item-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .history-item:hover {
-            background-color: #f5f7fb;
+            background: rgba(67, 97, 238, 0.3);
             border-left: 3px solid #4361ee;
-            color: #4361ee;
         }
 
         .history-item.active {
-            background-color: #e6eeff;
+            background: rgba(67, 97, 238, 0.5);
             border-left: 3px solid #4361ee;
-            color: #4361ee;
             font-weight: 500;
+        }
+
+        .delete-history {
+            color: #ecf0f1;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            opacity: 0.7;
+        }
+
+        .history-item:hover .delete-history {
+            opacity: 1;
+        }
+
+        .delete-history:hover {
+            color: #ff6b6b;
+            transform: scale(1.2);
         }
 
         /* Main Content Styles */
@@ -160,6 +233,12 @@
             height: 100%;
             background-color: rgba(245, 247, 251, 0.95);
             box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: margin-left 0.3s ease;
+            margin-left: 0;
+        }
+
+        .sidebar:not(.hidden) + .main-content {
+            margin-left: 300px;
         }
 
         /* Header Styles */
@@ -167,7 +246,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px 15px 15px;
+            padding: 30px 15px 20px;
             background-color: transparent;
             border-bottom: 1px solid rgba(230, 233, 239, 0.5);
             position: relative;
@@ -186,49 +265,52 @@
         }
 
         .header-logo {
-            width: 50px;
-            height: 50px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 22px;
-            margin-bottom: 10px;
+            font-size: 36px;
+            margin-bottom: 15px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         .header-logo i {
-            font-size: 24px;
+            font-size: 36px;
             animation: pulse 2s infinite;
         }
 
         .header-title {
-            font-size: 24px;
-            font-weight: 700;
+            font-size: 32px;
+            font-weight: 800;
             color: #2c3e50;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             background: linear-gradient(90deg, #3a0ca3, #4361ee);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 0 4px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
 
         .header-subtitle {
-            font-size: 14px;
+            font-size: 16px;
             color: #5a6268;
-            font-weight: 400;
+            font-weight: 500;
             text-align: center;
+            max-width: 600px;
+            line-height: 1.5;
         }
 
         /* Chat Area Styles */
         .chat-area {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -240,22 +322,22 @@
             color: #999;
             font-style: italic;
             align-self: center;
-            margin-top: 30px;
-            font-size: 16px;
+            margin-top: 50px;
+            font-size: 18px;
             text-align: center;
             padding: 0 15px;
         }
 
         .message {
             max-width: 85%;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            border-radius: 18px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 22px;
             position: relative;
             animation: fadeIn 0.4s ease-out;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            line-height: 1.5;
-            font-size: 15px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            line-height: 1.6;
+            font-size: 16px;
             transition: transform 0.3s;
         }
 
@@ -281,52 +363,53 @@
         .user-image-message {
             align-self: flex-end;
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 18px;
+            border-radius: 22px;
             border-bottom-right-radius: 5px;
-            padding: 8px;
-            margin-bottom: 15px;
+            padding: 10px;
+            margin-bottom: 20px;
             max-width: 85%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             animation: fadeIn 0.4s ease-out;
         }
 
         .user-image-message img {
-            max-width: 250px;
-            max-height: 250px;
-            border-radius: 12px;
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 15px;
             display: block;
         }
 
         .user-image-message .caption {
             color: white;
-            margin-top: 8px;
-            font-size: 13px;
+            margin-top: 10px;
+            font-size: 14px;
             word-break: break-word;
+            padding: 0 5px;
         }
 
         .thinking-indicator {
             align-self: flex-start;
             background: linear-gradient(135deg, #ffffff, #f8f9fa);
             color: #666;
-            padding: 12px 16px;
-            border-radius: 18px;
+            padding: 16px 20px;
+            border-radius: 22px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             font-style: italic;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
             border: 1px solid rgba(230, 233, 239, 0.8);
-            font-size: 15px;
+            font-size: 16px;
         }
 
         .typing-dots {
             display: flex;
-            gap: 5px;
+            gap: 8px;
         }
 
         .typing-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
             border-radius: 50%;
             animation: bounce 1.5s infinite;
@@ -340,30 +423,99 @@
             animation-delay: 0.4s;
         }
 
+        /* Modal Konfirmasi Hapus */
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .confirmation-content {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .confirmation-text {
+            margin-bottom: 25px;
+            font-size: 18px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .confirmation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .confirmation-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .confirmation-cancel {
+            background: linear-gradient(135deg, #f0f2f5, #e4e7eb);
+            color: #555;
+        }
+
+        .confirmation-cancel:hover {
+            background: linear-gradient(135deg, #e4e7eb, #d1d5db);
+            transform: translateY(-3px);
+        }
+
+        .confirmation-delete {
+            background: linear-gradient(135deg, #ff6b6b, #e74c3c);
+            color: white;
+        }
+
+        .confirmation-delete:hover {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            transform: translateY(-3px);
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
+            50% { transform: translateY(-10px); }
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
         }
 
         /* Footer Styles */
         .footer {
             background-color: white;
-            padding: 12px 15px;
+            padding: 15px 20px;
             border-top: 1px solid #e6e9ef;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             position: relative;
             flex-shrink: 0;
         }
@@ -374,13 +526,13 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 2px;
+            height: 3px;
             background: linear-gradient(90deg, #3a0ca3, #4361ee);
         }
 
         .mode-buttons {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -390,55 +542,50 @@
             align-items: center;
             background: linear-gradient(135deg, #f0f2f5, #e4e7eb);
             border: none;
-            border-radius: 22px;
-            padding: 8px 15px;
-            font-size: 14px;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
             font-weight: 600;
             color: #2c3e50;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             white-space: nowrap;
         }
 
         .mode-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
         }
 
         .mode-button.active {
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
             color: white;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-        }
-
-        .mode-button i {
-            margin-right: 6px;
-            font-size: 16px;
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
         }
 
         .input-container {
             flex: 1;
             display: flex;
             background: linear-gradient(135deg, #f0f2f5, #e4e7eb);
-            border-radius: 26px;
-            padding: 4px 15px;
+            border-radius: 30px;
+            padding: 6px 20px;
             align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             transition: all 0.3s;
             min-width: 0;
         }
 
         .input-container:focus-within {
-            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.5);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.5);
         }
 
         .input-container input {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 12px 0;
-            font-size: 15px;
+            padding: 14px 0;
+            font-size: 16px;
             outline: none;
             color: #333;
             min-width: 0;
@@ -450,8 +597,8 @@
         }
 
         .action-button {
-            width: 42px;
-            height: 42px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -461,13 +608,13 @@
             color: #666;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
             flex-shrink: 0;
         }
 
         .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
         }
 
         .send-button {
@@ -477,22 +624,33 @@
 
         .send-button:hover {
             background: linear-gradient(135deg, #3a56d4, #2e0a8a);
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.5);
+        }
+
+        /* Ikon SVG untuk tombol kirim */
+        .send-icon {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         /* Scrollbar styling */
         .chat-area::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
 
         .chat-area::-webkit-scrollbar-track {
             background: rgba(241, 241, 241, 0.5);
-            border-radius: 8px;
+            border-radius: 10px;
         }
 
         .chat-area::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 8px;
+            border-radius: 10px;
         }
 
         .chat-area::-webkit-scrollbar-thumb:hover {
@@ -500,170 +658,231 @@
         }
 
         .history-container::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .history-container::-webkit-scrollbar-track {
-            background: rgba(241, 241, 241, 0.5);
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
         }
 
         .history-container::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 4px;
+            background: rgba(236, 240, 241, 0.5);
+            border-radius: 6px;
+        }
+
+        .history-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(236, 240, 241, 0.8);
         }
 
         /* Responsive design */
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             .sidebar {
-                width: 50px;
+                width: 280px;
             }
             
-            .sidebar:hover {
-                width: 200px;
+            .sidebar:not(.hidden) + .main-content {
+                margin-left: 280px;
+            }
+            
+            .header-title {
+                font-size: 28px;
+            }
+            
+            .user-image-message img {
+                max-width: 250px;
+                max-height: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 260px;
+            }
+            
+            .sidebar:not(.hidden) + .main-content {
+                margin-left: 260px;
             }
             
             .profile-placeholder {
-                width: 35px;
-                height: 35px;
-                font-size: 18px;
-                margin-bottom: 15px;
+                width: 70px;
+                height: 70px;
+                font-size: 30px;
             }
             
             .sidebar-button {
-                padding: 10px 0;
+                padding: 12px 18px;
             }
             
             .sidebar-button i {
-                font-size: 16px;
+                font-size: 22px;
             }
             
             .footer {
                 flex-wrap: wrap;
-                padding: 10px;
-                gap: 8px;
+                padding: 12px;
+                gap: 10px;
             }
             
             .mode-buttons {
                 order: 1;
                 width: 100%;
                 justify-content: center;
-                margin-top: 8px;
+                margin-top: 10px;
             }
             
             .input-container {
                 order: 0;
-                width: calc(100% - 90px);
-                padding: 4px 12px;
+                width: calc(100% - 100px);
+                padding: 6px 15px;
             }
             
             .header-title {
-                font-size: 20px;
+                font-size: 24px;
             }
             
             .header-subtitle {
-                font-size: 13px;
+                font-size: 14px;
             }
 
             .user-image-message img {
-                max-width: 180px;
-                max-height: 180px;
+                max-width: 200px;
+                max-height: 200px;
             }
             
             .message {
                 max-width: 90%;
-                padding: 10px 14px;
-                font-size: 14px;
+                padding: 14px 18px;
+                font-size: 15px;
             }
             
             .action-button {
-                width: 38px;
-                height: 38px;
+                width: 44px;
+                height: 44px;
+            }
+            
+            .toggle-sidebar-button {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .sidebar {
+                width: 100%;
+                z-index: 1000;
+            }
+            
+            .sidebar:not(.hidden) {
+                transform: translateX(0);
+            }
+            
+            .sidebar.hidden {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar:not(.hidden) + .main-content {
+                margin-left: 0;
+            }
+            
+            .toggle-sidebar-button.sidebar-visible {
+                left: auto;
+                right: 20px;
+                background: linear-gradient(135deg, #ff6b6b, #ff0000);
+            }
+            
+            .header {
+                padding: 20px 10px 15px;
+            }
+            
+            .header-logo {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+            
+            .header-title {
+                font-size: 22px;
+            }
+            
+            .chat-area {
+                padding: 15px;
+            }
+            
+            .footer {
+                padding: 10px;
+            }
+            
+            .mode-button {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+            
+            .mode-button i {
+                font-size: 16px;
+            }
+            
+            .input-container input {
+                padding: 12px 0;
+                font-size: 15px;
+            }
+            
+            .action-button {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .action-button i {
+                font-size: 18px;
+            }
+            
+            .toggle-sidebar-button {
+                width: 46px;
+                height: 46px;
+                font-size: 20px;
+                left: 15px;
+                top: 15px;
+            }
+
+            .confirmation-content {
+                width: 95%;
+                padding: 25px;
             }
         }
         
         @media (max-width: 480px) {
-            .sidebar {
-                width: 45px;
-            }
-            
-            .sidebar:hover {
-                width: 180px;
-            }
-            
-            .header {
-                padding: 15px 10px 10px;
-            }
-            
-            .header-logo {
-                width: 40px;
-                height: 40px;
-                font-size: 18px;
-            }
-            
             .header-title {
-                font-size: 18px;
-            }
-            
-            .chat-area {
-                padding: 10px;
-            }
-            
-            .footer {
-                padding: 8px;
+                font-size: 20px;
             }
             
             .mode-button {
-                padding: 6px 12px;
+                padding: 7px 12px;
                 font-size: 13px;
-            }
-            
-            .mode-button i {
-                font-size: 14px;
-            }
-            
-            .input-container input {
-                padding: 10px 0;
-                font-size: 14px;
-            }
-            
-            .action-button {
-                width: 36px;
-                height: 36px;
-            }
-            
-            .action-button i {
-                font-size: 16px;
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .header-title {
-                font-size: 17px;
-            }
-            
-            .mode-button {
-                padding: 5px 10px;
-                font-size: 12px;
             }
             
             .input-container {
-                padding: 4px 10px;
+                padding: 5px 12px;
             }
             
             .input-container input {
-                font-size: 13px;
+                font-size: 14px;
+            }
+            
+            .message {
+                padding: 12px 16px;
+                font-size: 14px;
             }
         }
 
         /* Android-specific adjustments */
         @media (hover: none) {
             .sidebar:hover {
-                width: 60px;
+                width: 300px;
             }
             
-            .history-container {
-                display: none !important;
+            .delete-history {
+                display: block !important;
             }
         }
         
@@ -682,14 +901,22 @@
     </style>
 </head>
 <body>
-    <!-- Left Sidebar -->
-    <div class="sidebar">
-        <div class="profile-placeholder">
-            <i class="fas fa-user"></i>
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="confirmation-content">
+            <p class="confirmation-text">Apakah Anda yakin ingin menghapus percakapan ini? Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="confirmation-buttons">
+                <button id="confirmationCancel" class="confirmation-button confirmation-cancel">Batal</button>
+                <button id="confirmationDelete" class="confirmation-button confirmation-delete">Hapus</button>
+            </div>
         </div>
+    </div>
+
+    <!-- Left Sidebar -->
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-buttons">
-            <div class="sidebar-button" id="newChatButton">
-                <i class="fas fa-plus"></i>
+            <div class="sidebar-button active" id="newChatButton">
+                <i class="fas fa-plus-circle"></i>
                 <span>Chat Baru</span>
             </div>
             <div class="history-container">
@@ -698,8 +925,16 @@
                     <!-- Daftar riwayat akan muncul di sini -->
                 </div>
             </div>
+            <div class="profile-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
         </div>
     </div>
+
+    <!-- Tombol Toggle Sidebar -->
+    <button class="toggle-sidebar-button" id="toggleSidebar">
+        <i class="fas fa-bars"></i>
+    </button>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -737,7 +972,10 @@
                 <i class="fas fa-paperclip"></i>
             </button>
             <button class="action-button send-button" id="sendButton">
-                <i class="fas fa-paper-plane"></i>
+                <svg class="send-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                </svg>
             </button>
         </div>
     </div>
@@ -754,6 +992,11 @@
             const attachmentButton = document.getElementById('attachmentButton');
             const fileInput = document.getElementById('fileInput');
             const historyList = document.getElementById('historyList');
+            const toggleSidebarButton = document.getElementById('toggleSidebar');
+            const sidebar = document.getElementById('sidebar');
+            const confirmationModal = document.getElementById('confirmationModal');
+            const confirmationCancel = document.getElementById('confirmationCancel');
+            const confirmationDelete = document.getElementById('confirmationDelete');
             
             // State aplikasi
             const API_KEY = "AIzaSyDcX1GOOqJoDFbRJCd2IXlkhoxFnwNNiRM";
@@ -762,11 +1005,7 @@
             let uploadedImage = null;
             let conversationMemory = [];
             let currentChatId = null;
-            
-            // Pesan selamat datang
-            function addWelcomeMessage() {
-                addMessage('assistant', 'Halo! Saya Rhama, asisten AI Anda. Silakan ajukan pertanyaan, lampirkan gambar, atau gunakan fitur "Berpikir keras" untuk jawaban mendalam.');
-            }
+            let historyIdToDelete = null;
             
             // Inisialisasi chat dengan pesan selamat datang
             addWelcomeMessage();
@@ -871,7 +1110,9 @@
                 // PERBAIKAN: Prompt yang lebih jelas tanpa markdown
                 const systemPrompt = mode === 'deepThink' ? 
                     "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja." : 
-                    "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja.";
+                    mode === 'search' ?
+                    "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja." :
+                    "Anda adalah asisten AI yang membantu menjawab pertanyaan. Berikan jawaban yang jelas dan langsung. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja.";
                 
                 // Konstruksi konten dengan memori percakapan
                 const parts = [];
@@ -909,7 +1150,7 @@
                 const requestBody = {
                     contents: contents,
                     generationConfig: {
-                        temperature: mode === 'deepThink' ? 0.3 : 0.7,
+                        temperature: mode === 'deepThink' ? 0.3 : mode === 'search' ? 0.7 : 0.5,
                         maxOutputTokens: 2000
                     }
                 };
@@ -1064,11 +1305,18 @@
                     if (history.id === currentChatId) {
                         historyItem.classList.add('active');
                     }
-                    historyItem.textContent = history.title;
                     
-                    historyItem.addEventListener('click', () => {
-                        // Muat percakapan yang dipilih
-                        loadChatHistory(history.id);
+                    historyItem.innerHTML = `
+                        <div class="history-item-text">${history.title}</div>
+                        <i class="fas fa-trash delete-history" data-id="${history.id}"></i>
+                    `;
+                    
+                    historyItem.addEventListener('click', (e) => {
+                        // Jika yang diklik bukan tombol hapus
+                        if (!e.target.classList.contains('delete-history')) {
+                            // Muat percakapan yang dipilih
+                            loadChatHistory(history.id);
+                        }
                     });
                     
                     historyList.appendChild(historyItem);
@@ -1120,6 +1368,35 @@
                     // Tandai sebagai aktif di daftar riwayat
                     loadHistoryList();
                 }
+            }
+            
+            // Fungsi untuk menghapus riwayat percakapan
+            function deleteHistory(historyId) {
+                // Dapatkan semua riwayat
+                let histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
+                
+                // Hapus riwayat yang dipilih
+                histories = histories.filter(item => item.id !== historyId);
+                
+                // Simpan kembali ke localStorage
+                localStorage.setItem('chatHistories', JSON.stringify(histories));
+                
+                // Jika chat yang dihapus sedang aktif, buat chat baru
+                if (historyId === currentChatId) {
+                    currentChatId = null;
+                    chatArea.innerHTML = '';
+                    chatHistory = [];
+                    conversationMemory = [];
+                    addWelcomeMessage();
+                }
+                
+                // Perbarui daftar riwayat
+                loadHistoryList();
+            }
+            
+            // Pesan selamat datang
+            function addWelcomeMessage() {
+                addMessage('assistant', 'Halo! Saya Rhama, asisten AI Anda. Silakan ajukan pertanyaan, lampirkan gambar, atau gunakan fitur "Berpikir keras" untuk jawaban mendalam.');
             }
             
             // Event listeners
@@ -1177,6 +1454,11 @@
                 conversationMemory = [];
                 uploadedImage = null;
                 currentChatId = null;
+                activeMode = null;
+                
+                // Reset tombol mode
+                deepThinkButton.classList.remove('active');
+                searchButton.classList.remove('active');
                 
                 // Tambahkan pesan selamat datang baru
                 addMessage('assistant', 'Percakapan baru dimulai. Ada yang bisa saya bantu hari ini?');
@@ -1187,17 +1469,78 @@
             
             // Tombol mode
             deepThinkButton.addEventListener('click', () => {
-                activeMode = 'deepThink';
-                deepThinkButton.classList.add('active');
-                searchButton.classList.remove('active');
-                addMessage('assistant', 'Mode Berpikir Keras diaktifkan. Saya akan memberikan jawaban yang mendalam dan analitis untuk pertanyaan Anda.');
+                if (activeMode === 'deepThink') {
+                    // Mode sudah aktif, nonaktifkan
+                    activeMode = null;
+                    deepThinkButton.classList.remove('active');
+                    addMessage('assistant', 'Mode Berpikir Keras dinonaktifkan. Kembali ke mode normal.');
+                } else {
+                    // Aktifkan mode deepThink
+                    activeMode = 'deepThink';
+                    deepThinkButton.classList.add('active');
+                    searchButton.classList.remove('active');
+                    addMessage('assistant', 'Mode Berpikir Keras diaktifkan. Saya akan memberikan jawaban yang mendalam dan analitis untuk pertanyaan Anda.');
+                }
             });
             
             searchButton.addEventListener('click', () => {
-                activeMode = 'search';
-                searchButton.classList.add('active');
-                deepThinkButton.classList.remove('active');
-                addMessage('assistant', 'Mode Pencarian diaktifkan. Saya akan mencari informasi terkini yang relevan dengan pertanyaan Anda.');
+                if (activeMode === 'search') {
+                    // Mode sudah aktif, nonaktifkan
+                    activeMode = null;
+                    searchButton.classList.remove('active');
+                    addMessage('assistant', 'Mode Pencarian dinonaktifkan. Kembali ke mode normal.');
+                } else {
+                    // Aktifkan mode search
+                    activeMode = 'search';
+                    searchButton.classList.add('active');
+                    deepThinkButton.classList.remove('active');
+                    addMessage('assistant', 'Mode Pencarian diaktifkan. Saya akan mencari informasi terkini yang relevan dengan pertanyaan Anda.');
+                }
+            });
+            
+            // Toggle sidebar
+            toggleSidebarButton.addEventListener('click', () => {
+                sidebar.classList.toggle('hidden');
+                
+                if (sidebar.classList.contains('hidden')) {
+                    toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
+                    toggleSidebarButton.classList.remove('sidebar-visible');
+                } else {
+                    toggleSidebarButton.innerHTML = '<i class="fas fa-times"></i>';
+                    toggleSidebarButton.classList.add('sidebar-visible');
+                }
+            });
+            
+            // Event delegation untuk tombol hapus riwayat
+            historyList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-history')) {
+                    const historyId = e.target.getAttribute('data-id');
+                    historyIdToDelete = historyId;
+                    confirmationModal.style.display = 'flex';
+                }
+            });
+            
+            // Tombol konfirmasi hapus
+            confirmationDelete.addEventListener('click', () => {
+                if (historyIdToDelete) {
+                    deleteHistory(historyIdToDelete);
+                    historyIdToDelete = null;
+                    confirmationModal.style.display = 'none';
+                }
+            });
+            
+            // Tombol batal hapus
+            confirmationCancel.addEventListener('click', () => {
+                historyIdToDelete = null;
+                confirmationModal.style.display = 'none';
+            });
+            
+            // Tutup modal saat klik di luar area konten
+            confirmationModal.addEventListener('click', (e) => {
+                if (e.target === confirmationModal) {
+                    historyIdToDelete = null;
+                    confirmationModal.style.display = 'none';
+                }
             });
             
             // Muat riwayat saat halaman pertama kali dimuat
@@ -1205,7 +1548,6 @@
             
             // Penyesuaian untuk keyboard di Android
             const body = document.body;
-            const mainContent = document.querySelector('.main-content');
             
             messageInput.addEventListener('focus', () => {
                 body.classList.add('keyboard-open');
