@@ -539,6 +539,7 @@
             let activeMode = null;
             let chatHistory = [];
             let uploadedImage = null;
+            let conversationMemory = [];
             
             // Pesan selamat datang
             function addWelcomeMessage() {
@@ -567,6 +568,12 @@
                     timestamp: new Date().toISOString()
                 });
                 
+                // Simpan ke memori percakapan
+                conversationMemory.push({
+                    role: sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: text }]
+                });
+                
                 chatArea.scrollTop = chatArea.scrollHeight;
             }
             
@@ -589,6 +596,20 @@
                     imageData: imageData,
                     caption: caption,
                     timestamp: new Date().toISOString()
+                });
+                
+                // Simpan ke memori percakapan (gambar disimpan sebagai teks)
+                conversationMemory.push({
+                    role: 'user',
+                    parts: [
+                        { text: caption || "Saya mengirim gambar" },
+                        {
+                            inlineData: {
+                                mimeType: "image/jpeg",
+                                data: imageData.split(',')[1]
+                            }
+                        }
+                    ]
                 });
                 
                 chatArea.scrollTop = chatArea.scrollHeight;
@@ -629,15 +650,15 @@
                     "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik." : 
                     "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini.";
                 
-                // Konstruksi konten
+                // Konstruksi konten dengan memori percakapan
                 const parts = [];
                 
-                // Tambahkan prompt sistem
-                parts.push({
-                    text: `${systemPrompt}\n\nPertanyaan: ${message}`
-                });
+                // Tambahkan prompt sistem di awal percakapan jika memori kosong
+                if (conversationMemory.length === 0) {
+                    parts.push({ text: systemPrompt });
+                }
                 
-                // Jika ada gambar, tambahkan bagian gambar
+                // Tambahkan pesan baru
                 if (imageData) {
                     parts.push({
                         inlineData: {
@@ -647,11 +668,23 @@
                     });
                 }
                 
-                const requestBody = {
-                    contents: [{
+                if (message) {
+                    parts.push({ text: message });
+                }
+                
+                // Buat konten dengan memori percakapan + pesan baru
+                const contents = [...conversationMemory];
+                
+                // Tambahkan pesan baru ke konten
+                if (parts.length > 0) {
+                    contents.push({
                         role: "user",
                         parts: parts
-                    }],
+                    });
+                }
+                
+                const requestBody = {
+                    contents: contents,
                     generationConfig: {
                         temperature: mode === 'deepThink' ? 0.3 : 0.7,
                         maxOutputTokens: 2000
@@ -722,6 +755,12 @@
                     
                     // Tambahkan respons AI
                     addMessage('assistant', response);
+                    
+                    // Simpan respons asisten ke memori percakapan
+                    conversationMemory.push({
+                        role: "model",
+                        parts: [{ text: response }]
+                    });
                 } catch (error) {
                     hideThinkingIndicator();
                     addMessage('assistant', `Maaf, terjadi kesalahan: ${error.message}`);
@@ -773,9 +812,17 @@
             
             // Tombol chat baru
             newChatButton.addEventListener('click', () => {
+                // Kosongkan area chat
                 chatArea.innerHTML = '';
+                
+                // Reset riwayat chat dan memori percakapan
                 chatHistory = [];
+                conversationMemory = [];
+                
+                // Reset gambar yang diunggah
                 uploadedImage = null;
+                
+                // Tambahkan pesan selamat datang baru
                 addMessage('assistant', 'Percakapan baru dimulai. Ada yang bisa saya bantu hari ini?');
             });
             
