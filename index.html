@@ -350,7 +350,6 @@
             color: white;
             border-radius: 22px;
             border-bottom-right-radius: 5px;
-            /* Menghapus efek shadow */
             box-shadow: none !important;
         }
 
@@ -362,8 +361,20 @@
             border-radius: 0;
             padding: 16px 0;
             max-width: 100%;
-            /* Menghapus efek bubble */
             box-shadow: none !important;
+        }
+
+        .assistant-message a {
+            color: #4361ee;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 2px solid #4361ee;
+            transition: all 0.2s;
+        }
+
+        .assistant-message a:hover {
+            color: #3a0ca3;
+            border-bottom: 2px solid #3a0ca3;
         }
 
         .assistant-message:hover {
@@ -379,7 +390,6 @@
             margin-bottom: 20px;
             max-width: 85%;
             animation: fadeIn 0.4s ease-out;
-            /* Menghapus efek shadow */
             box-shadow: none !important;
         }
 
@@ -637,7 +647,6 @@
             box-shadow: 0 6px 15px rgba(67, 97, 238, 0.5);
         }
 
-        /* Ikon SVG untuk tombol kirim */
         .send-icon {
             width: 24px;
             height: 24px;
@@ -1014,13 +1023,25 @@
             toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
             toggleSidebarButton.classList.remove('sidebar-visible');
             
+            // Fungsi untuk mengubah URL menjadi link yang dapat diklik
+            function convertUrlsToLinks(text) {
+                // Regex untuk mendeteksi URL (http/https/ftp)
+                const urlRegex = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
+                
+                // Ganti URL dengan tag <a>
+                return text.replace(urlRegex, function(url) {
+                    // Tambahkan target="_blank" untuk membuka di tab baru
+                    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+                });
+            }
+            
             // Fungsi untuk menambahkan pesan teks ke chat
             function addMessage(sender, text) {
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message', `${sender}-message`);
                 
-                // Format teks dengan mempertahankan line breaks
-                const formattedText = text.replace(/\n/g, '<br>');
+                // Format teks dengan mempertahankan line breaks dan mengubah URL menjadi link
+                const formattedText = convertUrlsToLinks(text).replace(/\n/g, '<br>');
                 messageDiv.innerHTML = formattedText;
                 
                 chatArea.appendChild(messageDiv);
@@ -1047,9 +1068,12 @@
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('user-image-message');
                 
+                // Konversi URL dalam caption menjadi link
+                const captionWithLinks = caption ? convertUrlsToLinks(caption) : '';
+                
                 messageDiv.innerHTML = `
                     <img src="${imageData}" alt="Gambar yang diunggah">
-                    ${caption ? `<div class="caption">${caption}</div>` : ''}
+                    ${caption ? `<div class="caption">${captionWithLinks}</div>` : ''}
                 `;
                 
                 chatArea.appendChild(messageDiv);
@@ -1111,7 +1135,6 @@
             async function fetchGeminiResponse(message, imageData, mode) {
                 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
                 
-                // PERBAIKAN: Prompt yang lebih jelas tanpa markdown
                 const systemPrompt = mode === 'deepThink' ? 
                     "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja." : 
                     mode === 'search' ?
