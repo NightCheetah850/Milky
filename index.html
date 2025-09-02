@@ -2,1598 +2,973 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rhama Chat - AI Assistant</title>
-    <link rel="icon" href="/assets/images/favicon.png" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catur Interaktif 2D/3D dengan Stockfish</title>
     <style>
+        /* Styles tetap sama seperti sebelumnya */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
-
-        html, body {
-            height: 100%;
-            touch-action: manipulation;
-        }
-
+        
         body {
-            display: flex;
-            min-height: 100%;
-            background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
-            overflow: hidden;
-            color: #e2e8f0;
-        }
-
-        /* Tombol toggle sidebar baru */
-        .toggle-sidebar-button {
-            position: fixed;
-            left: 20px;
-            top: 20px;
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border: none;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-            color: white;
-            font-size: 22px;
-            transition: all 0.3s ease;
-            animation: pulse 2s infinite;
-        }
-
-        .toggle-sidebar-button:hover {
-            transform: translateY(-3px) rotate(10deg);
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.5);
-        }
-
-        .toggle-sidebar-button:active {
-            transform: scale(0.95);
-        }
-
-        .toggle-sidebar-button.sidebar-visible {
-            left: 260px;
-            background: linear-gradient(135deg, #ff6b6b, #ff0000);
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 300px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 25px 0;
-            box-shadow: 0 0 25px rgba(0, 0, 0, 0.4);
-            z-index: 10;
-            transition: all 0.4s ease;
-            overflow: hidden;
-            position: fixed;
-            height: 100%;
-            left: 0;
-            top: 0;
-            transform: translateX(-100%);
-        }
-
-        .sidebar.visible {
-            transform: translateX(0);
-        }
-
-        .profile-placeholder {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 36px;
-            margin-top: auto;
-            margin-bottom: 20px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-            border: 3px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .profile-placeholder i {
-            font-size: 36px;
-        }
-
-        .sidebar-buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            gap: 15px;
-            flex-grow: 1;
-            padding: 0 20px;
-        }
-
-        .sidebar-button {
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            padding: 15px 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #e2e8f0;
-            position: relative;
-            border-radius: 12px;
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(5px);
-        }
-
-        .sidebar-button:hover {
-            background: rgba(67, 97, 238, 0.3);
-            transform: translateX(5px);
-        }
-
-        .sidebar-button.active {
-            background: rgba(67, 97, 238, 0.5);
-            box-shadow: 0 0 15px rgba(67, 97, 238, 0.4);
-        }
-
-        .sidebar-button i {
-            font-size: 24px;
-            margin-right: 15px;
-            width: 30px;
-            text-align: center;
-        }
-
-        .sidebar-button span {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .history-container {
-            width: 100%;
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 20px;
-            border-top: 1px solid rgba(226, 232, 240, 0.2);
-            padding-top: 15px;
-        }
-
-        .history-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #e2e8f0;
-            padding: 10px 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            opacity: 0.8;
-        }
-
-        .history-item {
-            padding: 12px 20px;
-            font-size: 14px;
-            color: #e2e8f0;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.3);
-            margin: 5px 15px;
-            border-radius: 8px;
-        }
-
-        .history-item-text {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .history-item:hover {
-            background: rgba(67, 97, 238, 0.3);
-            border-left: 3px solid #4361ee;
-        }
-
-        .history-item.active {
-            background: rgba(67, 97, 238, 0.5);
-            border-left: 3px solid #4361ee;
-            font-weight: 500;
-        }
-
-        .delete-history {
-            color: #e2e8f0;
-            padding: 5px;
-            cursor: pointer;
-            border-radius: 3px;
-            transition: all 0.2s;
-            opacity: 0.7;
-        }
-
-        .history-item:hover .delete-history {
-            opacity: 1;
-        }
-
-        .delete-history:hover {
-            color: #ff6b6b;
-            transform: scale(1.2);
-        }
-
-        /* Main Content Styles */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            transition: margin-left 0.3s ease;
-            margin-left: 0;
-        }
-
-        .sidebar.visible + .main-content {
-            margin-left: 300px;
-        }
-
-        /* Header Styles */
-        .header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 15px 20px;
-            background-color: transparent;
-            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(67, 97, 238, 0.5), transparent);
-        }
-
-        .header-logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 36px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .header-logo i {
-            font-size: 36px;
-            animation: pulse 2s infinite;
-        }
-
-        .header-title {
-            font-size: 32px;
-            font-weight: 800;
-            color: #e2e8f0;
-            margin-bottom: 10px;
-            text-align: center;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        .header-subtitle {
-            font-size: 16px;
-            color: #94a3b8;
-            font-weight: 500;
-            text-align: center;
-            max-width: 600px;
-            line-height: 1.5;
-        }
-
-        /* Chat Area Styles */
-        .chat-area {
-            flex: 1;
-            overflow-y: auto;
+            background: linear-gradient(135deg, #2c3e50, #1a1a2e);
+            color: #ecf0f1;
+            min-height: 100vh;
             padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            color: #f39c12;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #bdc3c7;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .control-group {
             display: flex;
             flex-direction: column;
-            position: relative;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="none" stroke="%23304060" stroke-width="0.5"/></svg>');
+            min-width: 200px;
         }
-
-        .chat-area:empty::before {
-            content: "Percakapan Anda akan muncul di sini...";
-            color: #94a3b8;
-            font-style: italic;
-            align-self: center;
-            margin-top: 50px;
-            font-size: 18px;
-            text-align: center;
-            padding: 0 15px;
+        
+        .control-group label {
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #f39c12;
         }
-
-        .message {
-            max-width: 85%;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            position: relative;
-            animation: fadeIn 0.4s ease-out;
-            line-height: 1.6;
-            font-size: 16px;
-            transition: transform 0.3s;
-            border-radius: 18px;
+        
+        select, button {
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            background: #34495e;
+            color: #ecf0f1;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-
-        .message:hover {
-            transform: translateY(-3px);
+        
+        select:hover, button:hover {
+            background: #3d566e;
+            transform: translateY(-2px);
         }
-
-        .user-message {
-            align-self: flex-end;
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            color: white;
-            border-radius: 22px;
-            border-bottom-right-radius: 5px;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        
+        select:focus, button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #f39c12;
         }
-
-        .assistant-message {
-            align-self: flex-start;
-            background: rgba(30, 41, 59, 0.8);
-            color: #e2e8f0;
-            border-radius: 22px;
-            border-bottom-left-radius: 5px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .assistant-message a {
-            color: #60a5fa;
-            text-decoration: none;
-            font-weight: 600;
-            border-bottom: 2px solid #60a5fa;
-            transition: all 0.2s;
-        }
-
-        .assistant-message a:hover {
-            color: #3b82f6;
-            border-bottom: 2px solid #3b82f6;
-        }
-
-        .assistant-message:hover {
-            transform: none;
-        }
-
-        .user-image-message {
-            align-self: flex-end;
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 22px;
-            border-bottom-right-radius: 5px;
-            padding: 10px;
-            margin-bottom: 20px;
-            max-width: 85%;
-            animation: fadeIn 0.4s ease-out;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
-        }
-
-        .user-image-message img {
-            max-width: 300px;
-            max-height: 300px;
-            border-radius: 15px;
-            display: block;
-        }
-
-        .user-image-message .caption {
-            color: white;
-            margin-top: 10px;
-            font-size: 14px;
-            word-break: break-word;
-            padding: 0 5px;
-        }
-
-        .thinking-indicator {
-            align-self: flex-start;
-            background: none;
-            color: #94a3b8;
-            padding: 16px 0;
+        
+        button {
+            background: #e74c3c;
+            font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-style: italic;
-            border: none;
-            box-shadow: none;
-            font-size: 16px;
-        }
-
-        .typing-dots {
-            display: flex;
+            justify-content: center;
             gap: 8px;
         }
-
-        .typing-dot {
-            width: 10px;
-            height: 10px;
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            border-radius: 50%;
-            animation: bounce 1.5s infinite;
+        
+        button:hover {
+            background: #c0392b;
         }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
+        
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
         }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        /* Modal Konfirmasi Hapus */
-        .confirmation-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-
-        .confirmation-content {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 90%;
-            width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            text-align: center;
-            border: 1px solid rgba(67, 97, 238, 0.3);
-        }
-
-        .confirmation-text {
-            margin-bottom: 25px;
-            font-size: 18px;
-            color: #e2e8f0;
-            line-height: 1.5;
-        }
-
-        .confirmation-buttons {
+        
+        .game-container {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .confirmation-button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 16px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .confirmation-cancel {
-            background: linear-gradient(135deg, #334155, #475569);
-            color: #e2e8f0;
-        }
-
-        .confirmation-cancel:hover {
-            background: linear-gradient(135deg, #475569, #4b5563);
-            transform: translateY(-3px);
-        }
-
-        .confirmation-delete {
-            background: linear-gradient(135deg, #ff6b6b, #e74c3c);
-            color: white;
-        }
-
-        .confirmation-delete:hover {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            transform: translateY(-3px);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(67, 97, 238, 0.5); }
-            100% { transform: scale(1); box-shadow: 0 6px 15px rgba(0,0,0,0.3); }
-        }
-
-        /* Footer Styles */
-        .footer {
-            background-color: #0f172a;
-            padding: 15px 20px;
-            border-top: 1px solid #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            position: relative;
-            flex-shrink: 0;
-        }
-
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #3a0ca3, #4361ee);
-        }
-
-        .mode-buttons {
-            display: flex;
-            gap: 15px;
             flex-wrap: wrap;
+            gap: 30px;
             justify-content: center;
         }
-
-        .mode-button {
+        
+        .board-container {
+            flex: 1;
+            min-width: 350px;
+            max-width: 600px;
+            perspective: 1000px;
+        }
+        
+        .board-2d, .board-3d {
+            width: 100%;
+            padding-bottom: 100%;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s ease;
+        }
+        
+        .board-2d {
+            display: block;
+            background: #f5d7b4;
+        }
+        
+        .board-3d {
+            display: none;
+            transform-style: preserve-3d;
+            transform: rotateX(45deg) rotateZ(45deg) scale(0.9);
+        }
+        
+        .board-2d .square {
+            position: absolute;
+            width: 12.5%;
+            height: 12.5%;
             display: flex;
             align-items: center;
-            background: rgba(30, 41, 59, 0.7);
-            border: none;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #e2e8f0;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .board-2d .light {
+            background: #f5d7b4;
+        }
+        
+        .board-2d .dark {
+            background: #ca9650;
+        }
+        
+        .board-2d .piece {
+            width: 90%;
+            height: 90%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            white-space: nowrap;
-            border: 1px solid rgba(67, 97, 238, 0.3);
+            transition: transform 0.3s ease;
         }
-
-        .mode-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        
+        .board-2d .piece:hover {
+            transform: scale(1.1);
         }
-
-        .mode-button.active {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            color: white;
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.4);
+        
+        .board-3d .square {
+            position: absolute;
+            width: 12.5%;
+            height: 12.5%;
+            transition: all 0.3s ease;
         }
-
-        .input-container {
-            flex: 1;
-            display: flex;
-            background: rgba(30, 41, 59, 0.7);
-            border-radius: 30px;
-            padding: 6px 20px;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            transition: all 0.3s;
-            min-width: 0;
-            border: 1px solid rgba(67, 97, 238, 0.3);
+        
+        .board-3d .light {
+            background: #f5d7b4;
         }
-
-        .input-container:focus-within {
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.5);
-            border-color: #4361ee;
+        
+        .board-3d .dark {
+            background: #ca9650;
         }
-
-        .input-container input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 14px 0;
-            font-size: 16px;
-            outline: none;
-            color: #e2e8f0;
-            min-width: 0;
-        }
-
-        .input-container input::placeholder {
-            color: #94a3b8;
-            font-style: italic;
-        }
-
-        .action-button {
-            width: 50px;
-            height: 50px;
+        
+        .board-3d .piece {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(30, 41, 59, 0.7);
-            border: none;
-            color: #94a3b8;
+            font-size: 2.5vw;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            flex-shrink: 0;
-            border: 1px solid rgba(67, 97, 238, 0.3);
+            transition: transform 0.3s ease;
+            transform-style: preserve-3d;
+            z-index: 10;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
         }
-
-        .action-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        
+        .board-3d .piece:hover {
+            transform: translateY(-5px);
         }
-
-        .send-button {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
-            color: white;
+        
+        .selected {
+            box-shadow: 0 0 0 3px #f39c12, 0 0 10px 5px rgba(243, 156, 18, 0.5);
+            z-index: 20;
         }
-
-        .send-button:hover {
-            background: linear-gradient(135deg, #3a56d4, #2e0a8a);
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.5);
+        
+        .possible-move {
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            background-color: rgba(46, 204, 113, 0.5);
+            border-radius: 50%;
+            top: 35%;
+            left: 35%;
+            z-index: 5;
         }
-
-        .send-icon {
-            width: 24px;
-            height: 24px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        /* Scrollbar styling */
-        .chat-area::-webkit-scrollbar {
-            width: 10px;
-        }
-
-        .chat-area::-webkit-scrollbar-track {
-            background: rgba(30, 41, 59, 0.5);
+        
+        .info-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(44, 62, 80, 0.7);
             border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        .chat-area::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #4361ee, #3a0ca3);
+        
+        .status {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #34495e;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .move-history {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #34495e;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .move-history h3 {
+            margin-bottom: 10px;
+            color: #f39c12;
+            text-align: center;
+        }
+        
+        .moves {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .move {
+            padding: 8px;
+            background: #2c3e50;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .evaluation {
+            margin-top: 20px;
+            background: #34495e;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .evaluation h3 {
+            margin-bottom: 10px;
+            color: #f39c12;
+            text-align: center;
+        }
+        
+        .eval-bar {
+            height: 20px;
+            background: #e74c3c;
             border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
         }
-
-        .chat-area::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #3a56d4, #2e0a8a);
+        
+        .eval-fill {
+            height: 100%;
+            background: #2ecc71;
+            width: 50%;
+            transition: width 0.5s ease;
         }
-
-        .history-container::-webkit-scrollbar {
-            width: 6px;
+        
+        .eval-text {
+            text-align: center;
+            font-weight: bold;
         }
-
-        .history-container::-webkit-scrollbar-track {
-            background: rgba(30, 41, 59, 0.3);
-            border-radius: 6px;
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
         }
-
-        .history-container::-webkit-scrollbar-thumb {
-            background: rgba(67, 97, 238, 0.5);
-            border-radius: 6px;
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #f39c12;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
         }
-
-        .history-container::-webkit-scrollbar-thumb:hover {
-            background: rgba(67, 97, 238, 0.8);
-        }
-
-        /* Responsive design */
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 280px;
-            }
-            
-            .sidebar.visible + .main-content {
-                margin-left: 280px;
-            }
-            
-            .header-title {
-                font-size: 28px;
-            }
-            
-            .user-image-message img {
-                max-width: 250px;
-                max-height: 250px;
-            }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         @media (max-width: 768px) {
-            .sidebar {
-                width: 260px;
+            .game-container {
+                flex-direction: column;
             }
             
-            .sidebar.visible + .main-content {
-                margin-left: 260px;
-            }
-            
-            .profile-placeholder {
-                width: 70px;
-                height: 70px;
-                font-size: 30px;
-            }
-            
-            .sidebar-button {
-                padding: 12px 18px;
-            }
-            
-            .sidebar-button i {
-                font-size: 22px;
-            }
-            
-            .footer {
-                flex-wrap: wrap;
-                padding: 12px;
-                gap: 10px;
-            }
-            
-            .mode-buttons {
-                order: 1;
+            .board-container {
                 width: 100%;
-                justify-content: center;
-                margin-top: 10px;
             }
             
-            .input-container {
-                order: 0;
-                width: calc(100% - 100px);
-                padding: 6px 15px;
-            }
-            
-            .header-title {
-                font-size: 24px;
-            }
-            
-            .header-subtitle {
-                font-size: 14px;
-            }
-
-            .user-image-message img {
-                max-width: 200px;
-                max-height: 200px;
-            }
-            
-            .message {
-                max-width: 90%;
-                padding: 14px 18px;
-                font-size: 15px;
-            }
-            
-            .action-button {
-                width: 44px;
-                height: 44px;
-            }
-            
-            .toggle-sidebar-button {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
+            h1 {
+                font-size: 2rem;
             }
         }
         
-        @media (max-width: 576px) {
-            .sidebar {
-                width: 100%;
-                z-index: 1000;
-            }
-            
-            .sidebar.visible {
-                transform: translateX(0);
-            }
-            
-            .toggle-sidebar-button.sidebar-visible {
-                left: auto;
-                right: 20px;
-                background: linear-gradient(135deg, #ff6b6b, #ff0000);
-            }
-            
-            .header {
-                padding: 20px 10px 15px;
-            }
-            
-            .header-logo {
-                width: 60px;
-                height: 60px;
-                font-size: 28px;
-            }
-            
-            .header-title {
-                font-size: 22px;
-            }
-            
-            .chat-area {
-                padding: 15px;
-            }
-            
-            .footer {
-                padding: 10px;
-            }
-            
-            .mode-button {
-                padding: 8px 15px;
-                font-size: 14px;
-            }
-            
-            .mode-button i {
-                font-size: 16px;
-            }
-            
-            .input-container input {
-                padding: 12px 0;
-                font-size: 15px;
-            }
-            
-            .action-button {
-                width: 42px;
-                height: 42px;
-            }
-            
-            .action-button i {
-                font-size: 18px;
-            }
-            
-            .toggle-sidebar-button {
-                width: 46px;
-                height: 46px;
-                font-size: 20px;
-                left: 15px;
-                top: 15px;
-            }
-
-            .confirmation-content {
-                width: 95%;
-                padding: 25px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .header-title {
-                font-size: 20px;
-            }
-            
-            .mode-button {
-                padding: 7px 12px;
-                font-size: 13px;
-            }
-            
-            .input-container {
-                padding: 5px 12px;
-            }
-            
-            .input-container input {
-                font-size: 14px;
-            }
-            
-            .message {
-                padding: 12px 16px;
-                font-size: 14px;
-            }
-        }
-
-        /* Android-specific adjustments */
-        @media (hover: none) {
-            .sidebar:hover {
-                width: 300px;
-            }
-            
-            .delete-history {
-                display: block !important;
-            }
-        }
-        
-        .keyboard-open .chat-area {
-            padding-bottom: 80px;
-        }
-
-        #fileInput {
+        .hidden {
             display: none;
         }
         
-        /* Touch target optimizations */
-        .sidebar-button, .action-button, .mode-button, .history-item {
-            touch-action: manipulation;
+        .visible {
+            display: block;
+        }
+        
+        .error {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- Modal Konfirmasi Hapus -->
-    <div id="confirmationModal" class="confirmation-modal">
-        <div class="confirmation-content">
-            <p class="confirmation-text">Apakah Anda yakin ingin menghapus percakapan ini? Tindakan ini tidak dapat dibatalkan.</p>
-            <div class="confirmation-buttons">
-                <button id="confirmationCancel" class="confirmation-button confirmation-cancel">Batal</button>
-                <button id="confirmationDelete" class="confirmation-button confirmation-delete">Hapus</button>
+    <div class="container">
+        <header>
+            <h1>Catur Interaktif 2D/3D</h1>
+            <p class="subtitle">Bermain catur dengan tampilan 2D atau 3D dan lawan bot Stockfish yang kuat</p>
+        </header>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="view-mode">Tampilan Papan:</label>
+                <select id="view-mode">
+                    <option value="2d">2D Classic</option>
+                    <option value="3d">3D Perspective</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="player-side">Pilih Sisi:</label>
+                <select id="player-side">
+                    <option value="white">Putih (Bermain pertama)</option>
+                    <option value="black">Hitam (Bot bermain pertama)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="difficulty">Tingkat Kesulitan:</label>
+                <select id="difficulty">
+                    <option value="5">Mudah (Kedalaman 5)</option>
+                    <option value="10" selected>Sedang (Kedalaman 10)</option>
+                    <option value="15">Sulit (Kedalaman 15)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Aksi:</label>
+                <button id="new-game">
+                    <span>Game Baru</span>
+                </button>
             </div>
         </div>
-    </div>
-
-    <!-- Left Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-buttons">
-            <div class="sidebar-button active" id="newChatButton">
-                <i class="fas fa-plus-circle"></i>
-                <span>Chat Baru</span>
-            </div>
-            <div class="history-container">
-                <div class="history-title">Riwayat Percakapan</div>
-                <div id="historyList">
-                    <!-- Daftar riwayat akan muncul di sini -->
+        
+        <div class="game-container">
+            <div class="board-container">
+                <div class="board-2d" id="board-2d">
+                    <!-- Papan 2D akan di-generate oleh JavaScript -->
+                </div>
+                <div class="board-3d" id="board-3d">
+                    <!-- Papan 3D akan di-generate oleh JavaScript -->
                 </div>
             </div>
-            <div class="profile-placeholder">
-                <i class="fas fa-user"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tombol Toggle Sidebar -->
-    <button class="toggle-sidebar-button" id="toggleSidebar">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Header -->
-        <div class="header">
-            <div class="header-logo">
-                <i class="fas fa-robot"></i>
-            </div>
-            <h1 class="header-title">Halo, Saya Rhama</h1>
-            <p class="header-subtitle">Asisten AI Anda</p>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="chat-area" id="chatArea">
-            <!-- Pesan akan muncul di sini -->
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <div class="mode-buttons">
-                <button class="mode-button" id="deepThinkButton">
-                    <i class="fas fa-brain"></i> Berpikir keras
-                </button>
-                <button class="mode-button" id="searchButton">
-                    <i class="fas fa-search"></i> Pencarian
-                </button>
-            </div>
             
-            <div class="input-container">
-                <input type="text" id="messageInput" placeholder="Tanyakan apa saja...">
+            <div class="info-panel">
+                <div class="status" id="status">
+                    Status: Pilih sisi dan mulai game baru
+                </div>
+                
+                <div class="error" id="error-message">
+                    Terjadi kesalahan saat mengambil langkah bot. Silakan coba lagi.
+                </div>
+                
+                <div class="move-history">
+                    <h3>Riwayat Langkah</h3>
+                    <div class="moves" id="move-history">
+                        <!-- Riwayat langkah akan diisi oleh JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="evaluation">
+                    <h3>Evaluasi Posisi</h3>
+                    <div class="eval-bar">
+                        <div class="eval-fill" id="eval-fill"></div>
+                    </div>
+                    <div class="eval-text" id="eval-text">0.0 (Setara)</div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <p>Bot sedang berpikir...</p>
+                    <div class="spinner"></div>
+                </div>
             </div>
-            
-            <input type="file" id="fileInput" accept="image/*">
-            <button class="action-button" id="attachmentButton">
-                <i class="fas fa-paperclip"></i>
-            </button>
-            <button class="action-button send-button" id="sendButton">
-                <svg class="send-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 2L11 13"/>
-                    <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
-                </svg>
-            </button>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Elemen UI
-            const chatArea = document.getElementById('chatArea');
-            const messageInput = document.getElementById('messageInput');
-            const sendButton = document.getElementById('sendButton');
-            const newChatButton = document.getElementById('newChatButton');
-            const deepThinkButton = document.getElementById('deepThinkButton');
-            const searchButton = document.getElementById('searchButton');
-            const attachmentButton = document.getElementById('attachmentButton');
-            const fileInput = document.getElementById('fileInput');
-            const historyList = document.getElementById('historyList');
-            const toggleSidebarButton = document.getElementById('toggleSidebar');
-            const sidebar = document.getElementById('sidebar');
-            const confirmationModal = document.getElementById('confirmationModal');
-            const confirmationCancel = document.getElementById('confirmationCancel');
-            const confirmationDelete = document.getElementById('confirmationDelete');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Konstanta dan variabel global
+            const BOARD_SIZE = 8;
+            const PIECE_IMAGES = {
+                'white': {
+                    'king': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wk.png',
+                    'queen': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wq.png',
+                    'rook': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wr.png',
+                    'bishop': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wb.png',
+                    'knight': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wn.png',
+                    'pawn': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/wp.png'
+                },
+                'black': {
+                    'king': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bk.png',
+                    'queen': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bq.png',
+                    'rook': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/br.png',
+                    'bishop': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bb.png',
+                    'knight': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bn.png',
+                    'pawn': 'https://images.chesscomfiles.com/chess-themes/pieces/neo/150/bp.png'
+                }
+            };
             
-            // State aplikasi
-            const API_KEY = "AIzaSyDcX1GOOqJoDFbRJCd2IXlkhoxFnwNNiRM";
-            let activeMode = null;
-            let chatHistory = [];
-            let uploadedImage = null;
-            let conversationMemory = [];
-            let currentChatId = null;
-            let historyIdToDelete = null;
+            const initialPosition = [
+                ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+                ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+                ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+            ];
             
-            // Sidebar dalam keadaan tertutup saat pertama kali dimuat
-            sidebar.classList.remove('visible');
-            toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
-            toggleSidebarButton.classList.remove('sidebar-visible');
+            let boardData = JSON.parse(JSON.stringify(initialPosition));
+            let selectedPiece = null;
+            let selectedElement = null;
+            let currentPlayer = 'white';
+            let playerSide = 'white';
+            let moveHistory = [];
+            let gameActive = false;
             
-            // Fungsi untuk mengubah URL menjadi link yang dapat diklik
-            function convertUrlsToLinks(text) {
-                // Regex untuk mendeteksi URL (http/https/ftp)
-                const urlRegex = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
-                
-                // Ganti URL dengan tag <a>
-                return text.replace(urlRegex, function(url) {
-                    // Tambahkan target="_blank" untuk membuka di tab baru
-                    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-                });
+            // Elemen DOM
+            const viewModeSelect = document.getElementById('view-mode');
+            const playerSideSelect = document.getElementById('player-side');
+            const difficultySelect = document.getElementById('difficulty');
+            const newGameBtn = document.getElementById('new-game');
+            const statusDiv = document.getElementById('status');
+            const errorDiv = document.getElementById('error-message');
+            const moveHistoryDiv = document.getElementById('move-history');
+            const evalFillDiv = document.getElementById('eval-fill');
+            const evalTextDiv = document.getElementById('eval-text');
+            const loadingDiv = document.getElementById('loading');
+            const board2d = document.getElementById('board-2d');
+            const board3d = document.getElementById('board-3d');
+            
+            // Inisialisasi papan
+            function initializeBoard() {
+                initialize2DBoard();
+                initialize3DBoard();
+                updateViewMode();
             }
             
-            // Fungsi untuk menambahkan pesan teks ke chat
-            function addMessage(sender, text) {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('message', `${sender}-message`);
+            // Inisialisasi papan 2D
+            function initialize2DBoard() {
+                board2d.innerHTML = '';
                 
-                // Format teks dengan mempertahankan line breaks dan mengubah URL menjadi link
-                const formattedText = convertUrlsToLinks(text).replace(/\n/g, '<br>');
-                messageDiv.innerHTML = formattedText;
-                
-                chatArea.appendChild(messageDiv);
-                
-                // Simpan pesan ke riwayat
-                chatHistory.push({
-                    type: 'text',
-                    sender: sender,
-                    text: text,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Simpan ke memori percakapan
-                conversationMemory.push({
-                    role: sender === 'user' ? 'user' : 'model',
-                    parts: [{ text: text }]
-                });
-                
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
-            
-            // Fungsi untuk menambahkan pesan gambar ke chat
-            function addImageMessage(imageData, caption = '') {
-                const messageDiv = document.createElement('div');
-                messageDiv.classList.add('user-image-message');
-                
-                // Konversi URL dalam caption menjadi link
-                const captionWithLinks = caption ? convertUrlsToLinks(caption) : '';
-                
-                messageDiv.innerHTML = `
-                    <img src="${imageData}" alt="Gambar yang diunggah">
-                    ${caption ? `<div class="caption">${captionWithLinks}</div>` : ''}
-                `;
-                
-                chatArea.appendChild(messageDiv);
-                
-                // Simpan pesan gambar ke riwayat
-                chatHistory.push({
-                    type: 'image',
-                    sender: 'user',
-                    imageData: imageData,
-                    caption: caption,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Simpan ke memori percakapan (gambar disimpan sebagai teks)
-                conversationMemory.push({
-                    role: 'user',
-                    parts: [
-                        { text: caption || "Saya mengirim gambar" },
-                        {
-                            inlineData: {
-                                mimeType: "image/jpeg",
-                                data: imageData.split(',')[1]
-                            }
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const square = document.createElement('div');
+                        square.classList.add('square');
+                        square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+                        
+                        square.style.position = 'absolute';
+                        square.style.width = '12.5%';
+                        square.style.height = '12.5%';
+                        square.style.left = `${col * 12.5}%`;
+                        square.style.top = `${row * 12.5}%`;
+                        square.style.display = 'flex';
+                        square.style.alignItems = 'center';
+                        square.style.justifyContent = 'center';
+                        
+                        const piece = initialPosition[row][col];
+                        if (piece) {
+                            const pieceElement = document.createElement('div');
+                            pieceElement.classList.add('piece');
+                            pieceElement.dataset.piece = piece;
+                            pieceElement.dataset.row = row;
+                            pieceElement.dataset.col = col;
+                            pieceElement.style.backgroundImage = `url(${getPieceImageUrl(piece)})`;
+                            
+                            pieceElement.addEventListener('click', handlePieceClick);
+                            square.appendChild(pieceElement);
                         }
-                    ]
-                });
-                
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
-            
-            // Fungsi untuk menampilkan indikator berpikir
-            function showThinkingIndicator() {
-                const thinkingDiv = document.createElement('div');
-                thinkingDiv.classList.add('thinking-indicator');
-                thinkingDiv.id = 'thinkingIndicator';
-                
-                thinkingDiv.innerHTML = `
-                    <div> </div>
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                `;
-                
-                chatArea.appendChild(thinkingDiv);
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
-            
-            // Fungsi untuk menyembunyikan indikator berpikir
-            function hideThinkingIndicator() {
-                const indicator = document.getElementById('thinkingIndicator');
-                if (indicator) {
-                    indicator.remove();
-                }
-            }
-            
-            // Fungsi untuk memanggil API Gemini 2.0 Flash
-            async function fetchGeminiResponse(message, imageData, mode) {
-                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-                
-                const systemPrompt = mode === 'deepThink' ? 
-                    "Anda adalah asisten AI yang berpikir kritis dan mendalam. Berikan jawaban analitis yang komprehensif, detail, dan terstruktur dengan baik. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja." : 
-                    mode === 'search' ?
-                    "Anda adalah asisten AI pencari informasi. Berikan jawaban yang ringkas, relevan, dan berdasarkan informasi terkini. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja." :
-                    "Anda adalah asisten AI yang membantu menjawab pertanyaan. Berikan jawaban yang jelas dan langsung. JANGAN GUNAKAN markdown atau simbol seperti *, **, ``` dalam jawaban Anda. Gunakan teks biasa saja.";
-                
-                // Konstruksi konten dengan memori percakapan
-                const parts = [];
-                
-                // Tambahkan prompt sistem di awal percakapan jika memori kosong
-                if (conversationMemory.length === 0) {
-                    parts.push({ text: systemPrompt });
-                }
-                
-                // Tambahkan pesan baru
-                if (imageData) {
-                    parts.push({
-                        inlineData: {
-                            mimeType: "image/jpeg",
-                            data: imageData.split(',')[1]
-                        }
-                    });
-                }
-                
-                if (message) {
-                    parts.push({ text: message });
-                }
-                
-                // Buat konten dengan memori percakapan + pesan baru
-                const contents = [...conversationMemory];
-                
-                // Tambahkan pesan baru ke konten
-                if (parts.length > 0) {
-                    contents.push({
-                        role: "user",
-                        parts: parts
-                    });
-                }
-                
-                const requestBody = {
-                    contents: contents,
-                    generationConfig: {
-                        temperature: mode === 'deepThink' ? 0.3 : mode === 'search' ? 0.7 : 0.5,
-                        maxOutputTokens: 2000
+                        
+                        square.addEventListener('click', handleSquareClick);
+                        board2d.appendChild(square);
                     }
-                };
+                }
+            }
+            
+            // Inisialisasi papan 3D
+            function initialize3DBoard() {
+                board3d.innerHTML = '';
+                
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const square = document.createElement('div');
+                        square.classList.add('square');
+                        square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+                        
+                        square.style.left = `${col * 12.5}%`;
+                        square.style.top = `${row * 12.5}%`;
+                        
+                        const piece = initialPosition[row][col];
+                        if (piece) {
+                            const pieceElement = document.createElement('div');
+                            pieceElement.classList.add('piece');
+                            pieceElement.classList.add(piece === piece.toUpperCase() ? 'white' : 'black');
+                            pieceElement.dataset.piece = piece;
+                            pieceElement.dataset.row = row;
+                            pieceElement.dataset.col = col;
+                            pieceElement.style.backgroundImage = `url(${getPieceImageUrl(piece)})`;
+                            
+                            pieceElement.addEventListener('click', handlePieceClick);
+                            square.appendChild(pieceElement);
+                        }
+                        
+                        square.addEventListener('click', handleSquareClick);
+                        board3d.appendChild(square);
+                    }
+                }
+            }
+            
+            // Mendapatkan URL gambar untuk bidak
+            function getPieceImageUrl(piece) {
+                const isWhite = piece === piece.toUpperCase();
+                const pieceType = piece.toLowerCase();
+                const color = isWhite ? 'white' : 'black';
+                
+                switch(pieceType) {
+                    case 'k': return PIECE_IMAGES[color].king;
+                    case 'q': return PIECE_IMAGES[color].queen;
+                    case 'r': return PIECE_IMAGES[color].rook;
+                    case 'b': return PIECE_IMAGES[color].bishop;
+                    case 'n': return PIECE_IMAGES[color].knight;
+                    case 'p': return PIECE_IMAGES[color].pawn;
+                    default: return '';
+                }
+            }
+            
+            // Memperbarui mode tampilan (2D atau 3D)
+            function updateViewMode() {
+                const mode = viewModeSelect.value;
+                
+                if (mode === '2d') {
+                    board2d.style.display = 'block';
+                    board3d.style.display = 'none';
+                } else {
+                    board2d.style.display = 'none';
+                    board3d.style.display = 'block';
+                }
+            }
+            
+            // Menangani klik pada bidak
+            function handlePieceClick(event) {
+                if (!gameActive) return;
+                if (currentPlayer !== playerSide) return;
+                
+                const piece = event.target;
+                const row = parseInt(piece.dataset.row);
+                const col = parseInt(piece.dataset.col);
+                
+                // Jika sudah ada bidak yang dipilih, lakukan move
+                if (selectedPiece) {
+                    movePiece(selectedPiece.row, selectedPiece.col, row, col);
+                    return;
+                }
+                
+                // Jika belum ada bidak yang dipilih, pilih bidak ini
+                const pieceColor = boardData[row][col] === boardData[row][col].toUpperCase() ? 'white' : 'black';
+                
+                if (pieceColor === playerSide) {
+                    selectedPiece = { row, col, element: piece };
+                    piece.classList.add('selected');
+                }
+                
+                event.stopPropagation();
+            }
+            
+            // Menangani klik pada kotak
+            function handleSquareClick(event) {
+                if (!gameActive) return;
+                if (currentPlayer !== playerSide) return;
+                if (!selectedPiece) return;
+                
+                const row = parseInt(event.currentTarget.dataset.row);
+                const col = parseInt(event.currentTarget.dataset.col);
+                
+                movePiece(selectedPiece.row, selectedPiece.col, row, col);
+            }
+            
+            // Memindahkan bidak
+            function movePiece(fromRow, fromCol, toRow, toCol) {
+                // Validasi move sederhana
+                if (fromRow === toRow && fromCol === toCol) {
+                    resetSelection();
+                    return;
+                }
+                
+                // Lakukan move
+                const piece = boardData[fromRow][fromCol];
+                boardData[fromRow][fromCol] = '';
+                boardData[toRow][toCol] = piece;
+                
+                // Perbarui tampilan
+                updateBoard();
+                
+                // Tambahkan ke riwayat
+                const moveNotation = getMoveNotation(fromRow, fromCol, toRow, toCol);
+                addMoveToHistory(moveNotation);
+                
+                // Reset seleksi
+                resetSelection();
+                
+                // Ganti pemain
+                currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+                updateStatus();
+                
+                // Jika giliran bot, minta move bot
+                if (gameActive && currentPlayer !== playerSide) {
+                    getBotMove();
+                }
+            }
+            
+            // Mendapatkan notasi langkah
+            function getMoveNotation(fromRow, fromCol, toRow, toCol) {
+                const files = 'abcdefgh';
+                const ranks = '87654321';
+                
+                const piece = boardData[toRow][toCol];
+                const isPawn = piece.toLowerCase() === 'p';
+                const isCapture = boardData[toRow][toCol] !== '';
+                
+                let notation = '';
+                
+                if (!isPawn) {
+                    notation += piece.toUpperCase();
+                }
+                
+                if (isCapture) {
+                    if (isPawn) {
+                        notation += files[fromCol];
+                    }
+                    notation += 'x';
+                }
+                
+                notation += files[toCol] + ranks[toRow];
+                
+                return notation;
+            }
+            
+            // Menambah langkah ke riwayat
+            function addMoveToHistory(move) {
+                moveHistory.push(move);
+                
+                const moveElement = document.createElement('div');
+                moveElement.classList.add('move');
+                moveElement.textContent = `${moveHistory.length}. ${move}`;
+                
+                if (moveHistory.length % 2 === 1) {
+                    if (moveHistoryDiv.children.length % 2 === 0) {
+                        moveHistoryDiv.innerHTML = '';
+                    }
+                    moveHistoryDiv.appendChild(moveElement);
+                } else {
+                    moveHistoryDiv.appendChild(moveElement);
+                }
+            }
+            
+            // Mereset seleksi bidak
+            function resetSelection() {
+                if (selectedPiece) {
+                    selectedPiece.element.classList.remove('selected');
+                    selectedPiece = null;
+                }
+            }
+            
+            // Memperbarui tampilan papan
+            function updateBoard() {
+                // Perbarui papan 2D
+                const squares2d = board2d.querySelectorAll('.square');
+                squares2d.forEach(square => {
+                    const row = parseInt(square.dataset.row);
+                    const col = parseInt(square.dataset.col);
+                    
+                    // Hapus semua bidak di kotak ini
+                    square.innerHTML = '';
+                    
+                    // Tambahkan bidak baru jika ada
+                    const piece = boardData[row][col];
+                    if (piece) {
+                        const pieceElement = document.createElement('div');
+                        pieceElement.classList.add('piece');
+                        pieceElement.dataset.piece = piece;
+                        pieceElement.dataset.row = row;
+                        pieceElement.dataset.col = col;
+                        pieceElement.style.backgroundImage = `url(${getPieceImageUrl(piece)})`;
+                        
+                        pieceElement.addEventListener('click', handlePieceClick);
+                        square.appendChild(pieceElement);
+                    }
+                });
+                
+                // Perbarui papan 3D
+                const squares3d = board3d.querySelectorAll('.square');
+                squares3d.forEach(square => {
+                    const row = parseInt(square.dataset.row);
+                    const col = parseInt(square.dataset.col);
+                    
+                    // Hapus semua bidak di kotak ini
+                    square.innerHTML = '';
+                    
+                    // Tambahkan bidak baru jika ada
+                    const piece = boardData[row][col];
+                    if (piece) {
+                        const pieceElement = document.createElement('div');
+                        pieceElement.classList.add('piece');
+                        pieceElement.classList.add(piece === piece.toUpperCase() ? 'white' : 'black');
+                        pieceElement.dataset.piece = piece;
+                        pieceElement.dataset.row = row;
+                        pieceElement.dataset.col = col;
+                        pieceElement.style.backgroundImage = `url(${getPieceImageUrl(piece)})`;
+                        
+                        pieceElement.addEventListener('click', handlePieceClick);
+                        square.appendChild(pieceElement);
+                    }
+                });
+            }
+            
+            // Memperbarui status permainan
+            function updateStatus() {
+                statusDiv.textContent = `Status: ${currentPlayer === playerSide ? 'Giliran Anda' : 'Giliran Bot'}`;
+            }
+            
+            // Meminta langkah dari bot - DIPERBAIKI
+            async function getBotMove() {
+                loadingDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+                
+                // Konversi boardData ke FEN
+                let fen = '';
+                let emptyCount = 0;
+                
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const piece = boardData[row][col];
+                        if (piece === '') {
+                            emptyCount++;
+                        } else {
+                            if (emptyCount > 0) {
+                                fen += emptyCount;
+                                emptyCount = 0;
+                            }
+                            fen += piece;
+                        }
+                    }
+                    
+                    if (emptyCount > 0) {
+                        fen += emptyCount;
+                        emptyCount = 0;
+                    }
+                    
+                    if (row < BOARD_SIZE - 1) {
+                        fen += '/';
+                    }
+                }
+                
+                // Tambahkan info giliran, hak rokade, dll.
+                fen += ` ${currentPlayer[0]} - - 0 1`;
+                
+                // Dapatkan tingkat kesulitan (depth)
+                const depth = difficultySelect.value;
                 
                 try {
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
-                    });
+                    // PERBAIKAN: Gunakan GET request dengan parameter query
+                    const apiUrl = `https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(fen)}&depth=${depth}`;
                     
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error?.message || 'Terjadi kesalahan pada API');
-                    }
-                    
+                    const response = await fetch(apiUrl);
                     const data = await response.json();
                     
-                    // Ekstrak teks dari respons
-                    if (data.candidates && 
-                        data.candidates[0] && 
-                        data.candidates[0].content && 
-                        data.candidates[0].content.parts &&
-                        data.candidates[0].content.parts[0] &&
-                        data.candidates[0].content.parts[0].text) {
+                    if (data.success && data.data) {
+                        // Parse respons untuk mendapatkan langkah terbaik
+                        // Format respons: "bestmove e2e4"
+                        const bestMoveMatch = data.data.match(/bestmove\s+(\S+)/);
                         
-                        // Bersihkan simbol markdown
-                        let responseText = data.candidates[0].content.parts[0].text;
-                        responseText = responseText.replace(/\*\*/g, '') // Hapus **
-                                     .replace(/\*/g, '')   // Hapus *
-                                     .replace(/```/g, ''); // Hapus ```
-                        
-                        return responseText;
+                        if (bestMoveMatch && bestMoveMatch[1]) {
+                            const bestMove = bestMoveMatch[1];
+                            await makeBotMove(bestMove);
+                            
+                            // Coba dapatkan evaluasi jika tersedia
+                            const evalMatch = data.data.match(/cp\s+(-?\d+)/);
+                            if (evalMatch) {
+                                const evalScore = parseInt(evalMatch[1]) / 100;
+                                updateEvaluation(evalScore);
+                            }
+                        } else {
+                            throw new Error('Format respons tidak dikenali');
+                        }
                     } else {
-                        throw new Error('Format respons tidak valid');
+                        throw new Error(data.error || 'Tidak ada data yang diterima');
                     }
                 } catch (error) {
-                    console.error('API Error:', error);
-                    throw new Error(`Gagal mendapatkan respons: ${error.message}`);
+                    console.error('Error getting bot move:', error);
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = `Error: ${error.message || 'Gagal mendapatkan langkah dari bot'}`;
+                    
+                    // Fallback: biarkan pemain melanjutkan giliran
+                    currentPlayer = playerSide;
+                    updateStatus();
+                } finally {
+                    loadingDiv.style.display = 'none';
                 }
             }
             
-            // Fungsi untuk mengirim pesan
-            async function sendMessage() {
-                const message = messageInput.value.trim();
-                const imageData = uploadedImage;
+            // Melakukan langkah bot
+            async function makeBotMove(move) {
+                // Parse move (format: "e2e4")
+                const fromCol = move.charCodeAt(0) - 97; // a->0, b->1, ...
+                const fromRow = 8 - parseInt(move.charAt(1)); // 1->7, 2->6, ...
+                const toCol = move.charCodeAt(2) - 97;
+                const toRow = 8 - parseInt(move.charAt(3));
                 
-                // Jika tidak ada pesan dan tidak ada gambar, keluar
-                if (!message && !imageData) return;
-                
-                // Tampilkan pesan pengguna
-                if (imageData) {
-                    addImageMessage(imageData, message);
-                } else {
-                    addMessage('user', message);
+                // Validasi koordinat
+                if (isNaN(fromRow) || isNaN(fromCol) || isNaN(toRow) || isNaN(toCol) ||
+                    fromRow < 0 || fromRow >= BOARD_SIZE || fromCol < 0 || fromCol >= BOARD_SIZE ||
+                    toRow < 0 || toRow >= BOARD_SIZE || toCol < 0 || toCol >= BOARD_SIZE) {
+                    throw new Error(`Move tidak valid: ${move}`);
                 }
                 
-                // Kosongkan input dan reset gambar
-                messageInput.value = '';
-                uploadedImage = null;
+                // Tunggu sebentar untuk animasi
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
-                // Tampilkan indikator berpikir
-                showThinkingIndicator();
-                
-                try {
-                    // Dapatkan respons AI
-                    const response = await fetchGeminiResponse(message, imageData, activeMode);
-                    
-                    // Sembunyikan indikator berpikir
-                    hideThinkingIndicator();
-                    
-                    // Tambahkan respons AI
-                    addMessage('assistant', response);
-                    
-                    // Simpan respons asisten ke memori percakapan
-                    conversationMemory.push({
-                        role: "model",
-                        parts: [{ text: response }]
-                    });
-                    
-                    // Simpan riwayat percakapan
-                    saveChatHistory();
-                } catch (error) {
-                    hideThinkingIndicator();
-                    addMessage('assistant', `Maaf, terjadi kesalahan: ${error.message}`);
-                    console.error('API Error:', error);
+                // Lakukan move
+                const piece = boardData[fromRow][fromCol];
+                if (!piece) {
+                    throw new Error(`Tidak ada bidak di posisi awal: ${move}`);
                 }
+                
+                boardData[fromRow][fromCol] = '';
+                boardData[toRow][toCol] = piece;
+                
+                // Perbarui tampilan
+                updateBoard();
+                
+                // Tambahkan ke riwayat
+                const moveNotation = getMoveNotation(fromRow, fromCol, toRow, toCol);
+                addMoveToHistory(moveNotation);
+                
+                // Ganti pemain
+                currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+                updateStatus();
             }
             
-            // Fungsi untuk menyimpan riwayat chat ke localStorage
-            function saveChatHistory() {
-                if (chatHistory.length === 0) return;
+            // Memperbarui tampilan evaluasi
+            function updateEvaluation(score) {
+                // Konversi score ke persentase (dari -10 sampai +10 menjadi 0% sampai 100%)
+                const percentage = Math.min(Math.max((score + 10) * 5, 0), 100);
                 
-                // Buat ID unik untuk chat jika belum ada
-                if (!currentChatId) {
-                    currentChatId = 'chat-' + Date.now();
-                }
+                evalFillDiv.style.width = `${percentage}%`;
                 
-                // Buat objek riwayat
-                const historyItem = {
-                    id: currentChatId,
-                    title: getChatTitle(),
-                    timestamp: new Date().toISOString(),
-                    chatHistory: chatHistory,
-                    conversationMemory: conversationMemory
-                };
+                let evalText = `${score.toFixed(1)} `;
+                if (score > 1.0) evalText += '(Putih unggul jelas)';
+                else if (score > 0.3) evalText += '(Putih unggul)';
+                else if (score > 0.1) evalText += '(Putih sedikit unggul)';
+                else if (score > -0.1) evalText += '(Setara)';
+                else if (score > -0.3) evalText += '(Hitam sedikit unggul)';
+                else if (score > -1.0) evalText += '(Hitam unggul)';
+                else evalText += '(Hitam unggul jelas)';
                 
-                // Dapatkan semua riwayat yang ada
-                let histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
-                
-                // Hapus riwayat lama dengan ID yang sama jika ada
-                histories = histories.filter(item => item.id !== currentChatId);
-                
-                // Tambahkan riwayat baru
-                histories.push(historyItem);
-                
-                // Simpan kembali ke localStorage
-                localStorage.setItem('chatHistories', JSON.stringify(histories));
-                
-                // Perbarui daftar riwayat di sidebar
-                loadHistoryList();
+                evalTextDiv.textContent = evalText;
             }
             
-            // Fungsi untuk mendapatkan judul chat dari pesan pertama
-            function getChatTitle() {
-                if (chatHistory.length > 0) {
-                    const firstUserMessage = chatHistory.find(msg => msg.sender === 'user');
-                    if (firstUserMessage) {
-                        const text = firstUserMessage.text || firstUserMessage.caption || 'Percakapan';
-                        return text.length > 30 ? text.substring(0, 30) + '...' : text;
-                    }
+            // Memulai game baru
+            function startNewGame() {
+                // Reset board
+                boardData = JSON.parse(JSON.stringify(initialPosition));
+                selectedPiece = null;
+                moveHistory = [];
+                moveHistoryDiv.innerHTML = '';
+                errorDiv.style.display = 'none';
+                
+                // Set pemain
+                playerSide = playerSideSelect.value;
+                currentPlayer = 'white';
+                
+                // Reset evaluasi
+                updateEvaluation(0);
+                
+                // Perbarui tampilan
+                updateBoard();
+                updateStatus();
+                
+                // Aktifkan game
+                gameActive = true;
+                
+                // Jika pemain memilih hitam, minta langkah bot pertama
+                if (playerSide === 'black') {
+                    currentPlayer = 'white'; // Bot mulai pertama
+                    getBotMove();
                 }
-                return 'Percakapan Baru';
-            }
-            
-            // Fungsi untuk memuat daftar riwayat dari localStorage
-            function loadHistoryList() {
-                historyList.innerHTML = '';
-                
-                // Dapatkan semua riwayat
-                const histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
-                
-                // Urutkan berdasarkan timestamp (terbaru di atas)
-                histories.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                
-                // Tampilkan maksimal 10 riwayat terbaru
-                histories.slice(0, 10).forEach(history => {
-                    const historyItem = document.createElement('div');
-                    historyItem.className = 'history-item';
-                    if (history.id === currentChatId) {
-                        historyItem.classList.add('active');
-                    }
-                    
-                    historyItem.innerHTML = `
-                        <div class="history-item-text">${history.title}</div>
-                        <i class="fas fa-trash delete-history" data-id="${history.id}"></i>
-                    `;
-                    
-                    historyItem.addEventListener('click', (e) => {
-                        // Jika yang diklik bukan tombol hapus
-                        if (!e.target.classList.contains('delete-history')) {
-                            // Muat percakapan yang dipilih
-                            loadChatHistory(history.id);
-                        }
-                    });
-                    
-                    historyList.appendChild(historyItem);
-                });
-                
-                // Tambahkan pesan jika tidak ada riwayat
-                if (histories.length === 0) {
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.className = 'history-item';
-                    emptyMsg.textContent = 'Belum ada riwayat';
-                    emptyMsg.style.fontStyle = 'italic';
-                    historyList.appendChild(emptyMsg);
-                }
-            }
-            
-            // Fungsi untuk memuat riwayat chat tertentu
-            function loadChatHistory(chatId) {
-                // Dapatkan semua riwayat
-                const histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
-                
-                // Cari riwayat yang sesuai
-                const history = histories.find(item => item.id === chatId);
-                
-                if (history) {
-                    // Set ID chat saat ini
-                    currentChatId = chatId;
-                    
-                    // Kosongkan chat area
-                    chatArea.innerHTML = '';
-                    
-                    // Reset state
-                    chatHistory = [];
-                    conversationMemory = [];
-                    uploadedImage = null;
-                    
-                    // Tambahkan semua pesan dari riwayat
-                    history.chatHistory.forEach(msg => {
-                        if (msg.type === 'text') {
-                            addMessage(msg.sender, msg.text);
-                        } else if (msg.type === 'image') {
-                            // Untuk gambar, kita gunakan data yang tersimpan
-                            addImageMessage(msg.imageData, msg.caption);
-                        }
-                    });
-                    
-                    // Pulihkan memori percakapan
-                    conversationMemory = [...history.conversationMemory];
-                    
-                    // Tandai sebagai aktif di daftar riwayat
-                    loadHistoryList();
-                }
-            }
-            
-            // Fungsi untuk menghapus riwayat percakapan
-            function deleteHistory(historyId) {
-                // Dapatkan semua riwayat
-                let histories = JSON.parse(localStorage.getItem('chatHistories')) || [];
-                
-                // Hapus riwayat yang dipilih
-                histories = histories.filter(item => item.id !== historyId);
-                
-                // Simpan kembali ke localStorage
-                localStorage.setItem('chatHistories', JSON.stringify(histories));
-                
-                // Jika chat yang dihapus sedang aktif, buat chat baru
-                if (historyId === currentChatId) {
-                    currentChatId = null;
-                    chatArea.innerHTML = '';
-                    chatHistory = [];
-                    conversationMemory = [];
-                }
-                
-                // Perbarui daftar riwayat
-                loadHistoryList();
             }
             
             // Event listeners
-            sendButton.addEventListener('click', sendMessage);
+            viewModeSelect.addEventListener('change', updateViewMode);
+            newGameBtn.addEventListener('click', startNewGame);
             
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-            
-            // Tombol lampiran: trigger input file
-            attachmentButton.addEventListener('click', () => {
-                fileInput.click();
-            });
-            
-            // Ketika file dipilih
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    // Validasi jenis file
-                    if (!file.type.match('image.*')) {
-                        alert('Hanya file gambar yang diizinkan');
-                        return;
-                    }
-                    
-                    // Validasi ukuran file (maks 5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert('Ukuran file maksimal 5MB');
-                        return;
-                    }
-                    
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        uploadedImage = event.target.result; // Simpan gambar sebagai data URL
-                        // Tampilkan pratinjau di chat area
-                        addImageMessage(event.target.result, 'Gambar diunggah. Ketik pesan terkait gambar...');
-                    };
-                    reader.readAsDataURL(file);
-                }
-                // Reset input file untuk memungkinkan memilih file yang sama lagi
-                fileInput.value = '';
-            });
-            
-            // Tombol chat baru
-            newChatButton.addEventListener('click', () => {
-                // Simpan riwayat percakapan saat ini
-                saveChatHistory();
-                
-                // Kosongkan area chat
-                chatArea.innerHTML = '';
-                
-                // Reset state
-                chatHistory = [];
-                conversationMemory = [];
-                uploadedImage = null;
-                currentChatId = null;
-                activeMode = null;
-                
-                // Reset tombol mode
-                deepThinkButton.classList.remove('active');
-                searchButton.classList.remove('active');
-                
-                // Perbarui daftar riwayat
-                loadHistoryList();
-            });
-            
-            // Tombol mode
-            deepThinkButton.addEventListener('click', () => {
-                if (activeMode === 'deepThink') {
-                    // Mode sudah aktif, nonaktifkan
-                    activeMode = null;
-                    deepThinkButton.classList.remove('active');
-                } else {
-                    // Aktifkan mode deepThink
-                    activeMode = 'deepThink';
-                    deepThinkButton.classList.add('active');
-                    searchButton.classList.remove('active');
-                }
-            });
-            
-            searchButton.addEventListener('click', () => {
-                if (activeMode === 'search') {
-                    // Mode sudah aktif, nonaktifkan
-                    activeMode = null;
-                    searchButton.classList.remove('active');
-                } else {
-                    // Aktifkan mode search
-                    activeMode = 'search';
-                    searchButton.classList.add('active');
-                    deepThinkButton.classList.remove('active');
-                }
-            });
-            
-            // Toggle sidebar
-            toggleSidebarButton.addEventListener('click', () => {
-                sidebar.classList.toggle('visible');
-                
-                if (sidebar.classList.contains('visible')) {
-                    toggleSidebarButton.innerHTML = '<i class="fas fa-times"></i>';
-                    toggleSidebarButton.classList.add('sidebar-visible');
-                } else {
-                    toggleSidebarButton.innerHTML = '<i class="fas fa-bars"></i>';
-                    toggleSidebarButton.classList.remove('sidebar-visible');
-                }
-            });
-            
-            // Event delegation untuk tombol hapus riwayat
-            historyList.addEventListener('click', (e) => {
-                if (e.target.classList.contains('delete-history')) {
-                    const historyId = e.target.getAttribute('data-id');
-                    historyIdToDelete = historyId;
-                    confirmationModal.style.display = 'flex';
-                }
-            });
-            
-            // Tombol konfirmasi hapus
-            confirmationDelete.addEventListener('click', () => {
-                if (historyIdToDelete) {
-                    deleteHistory(historyIdToDelete);
-                    historyIdToDelete = null;
-                    confirmationModal.style.display = 'none';
-                }
-            });
-            
-            // Tombol batal hapus
-            confirmationCancel.addEventListener('click', () => {
-                historyIdToDelete = null;
-                confirmationModal.style.display = 'none';
-            });
-            
-            // Tutup modal saat klik di luar area konten
-            confirmationModal.addEventListener('click', (e) => {
-                if (e.target === confirmationModal) {
-                    historyIdToDelete = null;
-                    confirmationModal.style.display = 'none';
-                }
-            });
-            
-            // Muat riwayat saat halaman pertama kali dimuat
-            loadHistoryList();
-            
-            // Penyesuaian untuk keyboard di Android
-            const body = document.body;
-            
-            messageInput.addEventListener('focus', () => {
-                body.classList.add('keyboard-open');
-                // Scroll ke bawah saat keyboard muncul
-                setTimeout(() => {
-                    chatArea.scrollTop = chatArea.scrollHeight;
-                }, 300);
-            });
-            
-            messageInput.addEventListener('blur', () => {
-                body.classList.remove('keyboard-open');
-            });
-            
-            // Optimalkan untuk perangkat sentuh
-            document.querySelectorAll('.sidebar-button, .action-button, .mode-button, .history-item').forEach(button => {
-                button.addEventListener('touchstart', () => {
-                    button.classList.add('active');
-                });
-                
-                button.addEventListener('touchend', () => {
-                    button.classList.remove('active');
-                });
-            });
-            
-            // Contoh percakapan awal
-            setTimeout(() => {
-                if (chatArea.children.length === 0) {
-                    addMessage('assistant', 'Halo! Saya Rhama, asisten AI Anda. Bagaimana saya bisa membantu Anda hari ini?');
-                }
-            }, 1000);
+            // Inisialisasi
+            initializeBoard();
         });
     </script>
 </body>
