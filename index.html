@@ -3,122 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Viewer Model 3D</title>
+    <title>Viewer Model 3D - S8FS_C15024</title>
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background-color: #f0f0f0; /* Warna latar belakang lembut */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        canvas { 
-            display: block; 
-            width: 100vw; 
-            height: 100vh; 
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        /* Loading indicator */
-        #loading {
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .viewer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        #canvas-container {
+            width: 100%;
+            height: 60vh;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: #121212;
+        }
+        
+        #renderer-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .loading-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #333;
-            font-family: Arial, sans-serif;
-            font-size: 24px;
-            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fdbb2d;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        
+        .progress-bar {
+            width: 80%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #fdbb2d, #b21f1f);
+            transition: width 0.3s ease;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        .control-btn {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .control-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            text-align: center;
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .instructions h2 {
+            margin-bottom: 15px;
+            color: #fdbb2d;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            #canvas-container {
+                height: 50vh;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .control-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
-</head>
-<body>
-    <div id="loading">Memuat model...</div>
+    <!-- Load Three.js and necessary components from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/jsm/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Viewer Model 3D</h1>
+            <p class="subtitle">Model: S8FS_C15024.gltf</p>
+        </header>
+        
+        <div class="viewer-container">
+            <div id="canvas-container">
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Memuat model 3D...</div>
+                    <div class="progress-bar">
+                        <div class="progress" id="progress-bar"></div>
+                    </div>
+                </div>
+                <div id="renderer-container"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="rotate-toggle">
+                    <i>↻</i> <span>Putar Otomatis</span>
+                </button>
+                <button class="control-btn" id="reset-view">
+                    <i>⟲</i> <span>Reset View</span>
+                </button>
+                <button class="control-btn" id="zoom-in">
+                    <i>+</i> <span>Zoom In</span>
+                </button>
+                <button class="control-btn" id="zoom-out">
+                    <i>-</i> <span>Zoom Out</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h2>Cara Menggunakan Viewer 3D</h2>
+            <p>Model 3D Anda telah berhasil dimuat. Berikut adalah cara untuk berinteraksi dengan model:</p>
+            <ul>
+                <li><strong>Putar Model</strong>: Klik dan seret dengan mouse untuk memutar model</li>
+                <li><strong>Zoom</strong>: Gunakan scroll mouse atau tombol zoom di atas untuk memperbesar/memperkecil</li>
+                <li><strong>Geser</strong>: Tekan tombol Shift + klik dan seret untuk menggeser model</li>
+                <li><strong>Putar Otomatis</strong>: Gunakan tombol "Putar Otomatis" untuk memutar model secara terus-menerus</li>
+                <li><strong>Reset View</strong>: Klik "Reset View" untuk mengembalikan model ke posisi awal</li>
+            </ul>
+            <p>Model ini berasal dari file <strong>S8FS_C15024.gltf</strong> yang telah dikonversi dari format .SLDPR</p>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 Viewer Model 3D | Dibuat dengan Three.js</p>
+    </footer>
 
     <script>
-        // Elemen loading
-        const loadingIndicator = document.getElementById('loading');
-
-        // Init scene, camera, renderer
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff); // Latar belakang putih
-
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 0, 5); // Posisi kamera
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // Mengaktifkan shadow map
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Tipe shadow map
-        document.body.appendChild(renderer.domElement);
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040, 1); // Cahaya ambient
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 10, 7.5);
-        directionalLight.castShadow = true; // Mengaktifkan bayangan untuk directional light
-        directionalLight.shadow.mapSize.width = 1024; // Ukuran peta bayangan
-        directionalLight.shadow.mapSize.height = 1024;
-        scene.add(directionalLight);
-
-        // OrbitControls
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true; // Mengaktifkan damping untuk kontrol yang halus
-        controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
-        controls.minDistance = 1; // Jarak zoom minimum
-        controls.maxDistance = 20; // Jarak zoom maksimum
-
-        // Load model GLTF
-        const loader = new THREE.GLTFLoader();
-        loader.load(
-            'assets/S8FS_C15024.gltf', // Path ke model GLTF
-            function (gltf) {
-                const model = gltf.scene;
-                scene.add(model);
-
-                // Optional: Sesuaikan posisi, skala, atau rotasi model jika diperlukan
-                model.position.set(0, 0, 0);
-                model.scale.set(1, 1, 1);
-
-                // Sembunyikan indicator loading
-                loadingIndicator.style.display = 'none';
-
-                // Optional: Jika model memiliki animasi, Anda bisa memainkannya di sini
-                // if (gltf.animations && gltf.animations.length) {
-                //     const mixer = new THREE.AnimationMixer(model);
-                //     const action = mixer.clipAction(gltf.animations[0]);
-                //     action.play();
-                //     // Update mixer di animation loop
-                // }
-            },
-            function (xhr) {
-                // Kemajuan loading
-                const percentLoaded = (xhr.loaded / xhr.total) * 100;
-                loadingIndicator.textContent = `Memuat model: ${percentLoaded.toFixed(2)}%`;
-            },
-            function (error) {
-                // Penanganan error
-                console.error('Error loading model:', error);
-                loadingIndicator.textContent = 'Error memuat model. Lihat konsol untuk detail.';
-            }
-        );
-
+        // Initialize Three.js components
+        let scene, camera, renderer, controls, model;
+        let autoRotate = false;
+        
+        // DOM elements
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const progressBar = document.getElementById('progress-bar');
+        const canvasContainer = document.getElementById('canvas-container');
+        
+        // Initialize the scene
+        function init() {
+            // Create scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x121212);
+            scene.environment = new THREE.AmbientLight(0x404040, 1);
+            
+            // Create camera
+            camera = new THREE.PerspectiveCamera(
+                75, 
+                canvasContainer.clientWidth / canvasContainer.clientHeight, 
+                0.1, 
+                1000
+            );
+            camera.position.set(0, 0, 5);
+            
+            // Create renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('renderer-container').appendChild(renderer.domElement);
+            
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0x404040, 1);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 10, 7.5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Add orbit controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 1;
+            controls.maxDistance = 20;
+            
+            // Load the model
+            loadModel();
+            
+            // Add event listeners
+            setupEventListeners();
+            
+            // Start animation loop
+            animate();
+            
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+        }
+        
+        // Load the GLTF model
+        function loadModel() {
+            const loader = new THREE.GLTFLoader();
+            
+            loader.load(
+                'assets/S8FS_C15024.gltf',
+                function (gltf) {
+                    model = gltf.scene;
+                    scene.add(model);
+                    
+                    // Center the model
+                    const box = new THREE.Box3().setFromObject(model);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    model.position.x = -center.x;
+                    model.position.y = -center.y;
+                    model.position.z = -center.z;
+                    
+                    // Adjust camera position based on model size
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    camera.position.z = maxDim * 1.5;
+                    
+                    controls.update();
+                    
+                    // Hide loading overlay with a delay to show the progress completion
+                    setTimeout(() => {
+                        loadingOverlay.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingOverlay.style.display = 'none';
+                        }, 500);
+                    }, 500);
+                },
+                function (xhr) {
+                    // Progress callback
+                    const percentLoaded = (xhr.loaded / xhr.total) * 100;
+                    progressBar.style.width = percentLoaded + '%';
+                },
+                function (error) {
+                    // Error callback
+                    console.error('Error loading model:', error);
+                    loadingOverlay.querySelector('.loading-text').textContent = 
+                        'Error memuat model. Lihat konsol untuk detail.';
+                }
+            );
+        }
+        
+        // Set up UI event listeners
+        function setupEventListeners() {
+            document.getElementById('rotate-toggle').addEventListener('click', function() {
+                autoRotate = !autoRotate;
+                controls.autoRotate = autoRotate;
+                this.querySelector('span').textContent = autoRotate ? 'Hentikan Putaran' : 'Putar Otomatis';
+            });
+            
+            document.getElementById('reset-view').addEventListener('click', function() {
+                controls.reset();
+            });
+            
+            document.getElementById('zoom-in').addEventListener('click', function() {
+                camera.fov -= 5;
+                camera.updateProjectionMatrix();
+            });
+            
+            document.getElementById('zoom-out').addEventListener('click', function() {
+                camera.fov += 5;
+                camera.updateProjectionMatrix();
+            });
+        }
+        
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = canvasContainer.clientWidth / canvasContainer.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvasContainer.clientWidth, canvasContainer.clientHeight);
+        }
+        
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            controls.update(); // Update kontrol di setiap frame
+            
+            if (autoRotate) {
+                model.rotation.y += 0.005;
+            }
+            
+            controls.update();
             renderer.render(scene, camera);
         }
-        animate();
-
-        // Handle resize window
-        window.addEventListener('resize', function () {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        
+        // Initialize the application when the page is loaded
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>
